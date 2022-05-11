@@ -1,0 +1,25 @@
+sceneSetups:
+- path: Assets/UI/MainMenu.unity
+  isLoaded: 0
+  isActive: 0
+  isSubScene: 0
+- path: Assets/Scenes/NHPT_CueBased_Scene.unity
+  isLoaded: 0
+  isActive: 0
+  isSubScene: 0
+- path: Assets/Scenes/NHPT_SelfPaced_Scene.unity
+  isLoaded: 0
+  isActive: 0
+  isSubScene: 0
+- path: Assets/Scenes/N-Back_Task.unity
+  isLoaded: 1
+  isActive: 1
+  isSubScene: 0
+- path: Assets/Scenes/Stop_Signal_Task.unity
+  isLoaded: 0
+  isActive: 0
+  isSubScene: 0
+- path: Assets/Scenes/Color_Change_Detection_Task.unity
+  isLoaded: 0
+  isActive: 0
+  isSubScene: 0
