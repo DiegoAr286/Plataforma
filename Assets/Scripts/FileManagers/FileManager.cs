@@ -13,10 +13,11 @@ public class FileManager : MonoBehaviour
     private List<Vector3> stylusVelocity;
 
     private List<float> timeVector;
-    private Dictionary<int, string> triggerVector;
+    private Dictionary<int, int> triggerVector;
 
     private Dictionary<int, int> trialVector;
 
+    private Dictionary<int, int> grabVector;
 
     //private int frameCounter = 0;
     [Range(0, 100)] public int frameCounterLimit = 0;
@@ -32,24 +33,18 @@ public class FileManager : MonoBehaviour
         stylusPosition = new List<Vector3>();
         stylusVelocity = new List<Vector3>();
         timeVector = new List<float>();
-        triggerVector = new Dictionary<int, string>();
+        triggerVector = new Dictionary<int, int>();
         trialVector = new Dictionary<int, int>();
+        grabVector = new Dictionary<int, int>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        //currentTime = Time.realtimeSinceStartup;
         currentTime = Time.timeSinceLevelLoad;
-        //currentTime = cueManager.totalCurrentTime;
 
-        //Debug.Log(proxyPosition);
-        //if (frameCounter == frameCounterLimit)
-        //{
         StoreDataInBuffer();
-        //frameCounter = 0;
-        //}
-        //frameCounter++;
+
     }
 
     void StoreDataInBuffer()
@@ -64,10 +59,10 @@ public class FileManager : MonoBehaviour
         switch (trigger)
         {
             case 1:
-                triggerVector.Add(stylusPosition.Count - 1, "T1");
+                triggerVector.Add(stylusPosition.Count - 1, 1);
                 break;
             case 2:
-                triggerVector.Add(stylusPosition.Count - 1, "T2");
+                triggerVector.Add(stylusPosition.Count - 1, 2);
                 break;
         }
     }
@@ -75,6 +70,11 @@ public class FileManager : MonoBehaviour
     public void StoreTrialOutcome(int trial)
     {
         trialVector.Add(stylusPosition.Count - 1, trial);
+    }
+
+    public void StoreGrabMoment()
+    {
+        grabVector.Add(stylusPosition.Count - 1, 1);
     }
 
     public void WriteData()
@@ -96,35 +96,68 @@ public class FileManager : MonoBehaviour
             File.WriteAllText(path, "Position_x,Position_y,Position_z,Velocity_x,Velocity_y,Velocity_z,Time,Trigger,Trial\n");
         }
 
+        //int noTrigger = -1;
+        //int noTrial = -1;
+        //int noGrab = -1;
 
-        int noTrigger = 0;
-        int noTrial = 0;
+        int trigger;
+        int trial;
+        int grab;
+
         CultureInfo cult = CultureInfo.InvariantCulture;
         for (int i = 0; i < stylusPosition.Count; i++)
         {
             if (triggerVector.ContainsKey(i))
             {
-                File.AppendAllText(path, String.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8}\n",
-                    stylusPosition[i].x.ToString(cult), stylusPosition[i].y.ToString(cult), stylusPosition[i].z.ToString(cult),
-                    stylusVelocity[i].x.ToString(cult), stylusVelocity[i].y.ToString(cult), stylusVelocity[i].z.ToString(cult),
-                    timeVector[i].ToString(cult), triggerVector[i], noTrial.ToString()));
+                trigger = triggerVector[i];
             }
+            else
+                trigger = -1;
 
             if (trialVector.ContainsKey(i))
             {
-                File.AppendAllText(path, String.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8}\n",
-                    stylusPosition[i].x.ToString(cult), stylusPosition[i].y.ToString(cult), stylusPosition[i].z.ToString(cult),
-                    stylusVelocity[i].x.ToString(cult), stylusVelocity[i].y.ToString(cult), stylusVelocity[i].z.ToString(cult),
-                    timeVector[i].ToString(cult), noTrigger.ToString(), trialVector[i]));
+                trial = trialVector[i];
             }
+            else
+                trial = -1;
 
-            if (!triggerVector.ContainsKey(i) && !trialVector.ContainsKey(i))
+            if (grabVector.ContainsKey(i))
             {
-                File.AppendAllText(path, String.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8}\n",
-                    stylusPosition[i].x.ToString(cult), stylusPosition[i].y.ToString(cult), stylusPosition[i].z.ToString(cult),
-                    stylusVelocity[i].x.ToString(cult), stylusVelocity[i].y.ToString(cult), stylusVelocity[i].z.ToString(cult),
-                    timeVector[i].ToString(cult), noTrigger.ToString(), noTrial.ToString()));
+                grab = grabVector[i];
             }
+            else
+                grab = -1;
+
+
+            File.AppendAllText(path, String.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9}\n",
+                stylusPosition[i].x.ToString(cult), stylusPosition[i].y.ToString(cult), stylusPosition[i].z.ToString(cult),
+                stylusVelocity[i].x.ToString(cult), stylusVelocity[i].y.ToString(cult), stylusVelocity[i].z.ToString(cult),
+                timeVector[i].ToString(cult), trigger.ToString(), trial.ToString(), grab.ToString()));
+
+
+            //if (triggerVector.ContainsKey(i))
+            //{
+            //    File.AppendAllText(path, String.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8}\n",
+            //        stylusPosition[i].x.ToString(cult), stylusPosition[i].y.ToString(cult), stylusPosition[i].z.ToString(cult),
+            //        stylusVelocity[i].x.ToString(cult), stylusVelocity[i].y.ToString(cult), stylusVelocity[i].z.ToString(cult),
+            //        timeVector[i].ToString(cult), triggerVector[i].ToString(), noTrial.ToString()));
+            //}
+
+            //if (trialVector.ContainsKey(i))
+            //{
+            //    File.AppendAllText(path, String.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8}\n",
+            //        stylusPosition[i].x.ToString(cult), stylusPosition[i].y.ToString(cult), stylusPosition[i].z.ToString(cult),
+            //        stylusVelocity[i].x.ToString(cult), stylusVelocity[i].y.ToString(cult), stylusVelocity[i].z.ToString(cult),
+            //        timeVector[i].ToString(cult), noTrigger.ToString(), trialVector[i].ToString()));
+            //}
+
+            //if (!triggerVector.ContainsKey(i) && !trialVector.ContainsKey(i))
+            //{
+            //    File.AppendAllText(path, String.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8}\n",
+            //        stylusPosition[i].x.ToString(cult), stylusPosition[i].y.ToString(cult), stylusPosition[i].z.ToString(cult),
+            //        stylusVelocity[i].x.ToString(cult), stylusVelocity[i].y.ToString(cult), stylusVelocity[i].z.ToString(cult),
+            //        timeVector[i].ToString(cult), noTrigger.ToString(), noTrial.ToString()));
+            //}
 
             //if (trialVector.ContainsKey(i))
             //    File.AppendAllText(path, String.Format("{0}\n", trialVector[i]));

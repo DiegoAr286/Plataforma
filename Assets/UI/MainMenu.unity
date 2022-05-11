@@ -563,7 +563,11 @@ MonoBehaviour:
       m_Image: {fileID: 0}
     - m_Text: 9-Hole Peg Test (self paced)
       m_Image: {fileID: 0}
-    - m_Text: Paradigma 3 (vacio)
+    - m_Text: N-Back Task
+      m_Image: {fileID: 0}
+    - m_Text: Stop Signal Task
+      m_Image: {fileID: 0}
+    - m_Text: Color Change Detection Task
       m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
@@ -1168,7 +1172,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Proyecto \xC1revalo - Genolet\nVersion: 00"
+  m_text: "Proyecto Ar\xE9valo - Genolet\nVersion: 1.0"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

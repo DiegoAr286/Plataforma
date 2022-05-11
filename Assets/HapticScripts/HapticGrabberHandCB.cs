@@ -290,7 +290,7 @@ public class HapticGrabberHandCB : MonoBehaviour
 		if (touchedObject.tag =="Gripper")
 			return;
 
-		Debug.Log( " Object : " + touchedObject.name + "  Tag : " + touchedObject.tag );
+		//Debug.Log( " Object : " + touchedObject.name + "  Tag : " + touchedObject.tag );
 
 		grabbing = touchedObject;
 
@@ -319,6 +319,10 @@ public class HapticGrabberHandCB : MonoBehaviour
 
 		joint = (FixedJoint)gameObject.AddComponent(typeof(FixedJoint));
 		joint.connectedBody = body;
+
+		if (grabbing != null) // Chequea que esté agarrando algo
+			cueManager.PegGrabEvent(); // Evento de toma de un peg
+
 	}
 	//! changes the layer of an object, and every child of that object.
 	static void SetLayerRecursively(GameObject go, int layerNumber )

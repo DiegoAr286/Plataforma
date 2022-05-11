@@ -343,14 +343,14 @@ public class CueManager : MonoBehaviour
 
     void PegEnter(Collider col) // Método llamado al producirse un evento de entrada de peg
     {
-        Debug.Log("Peg in"); // Mensaje por consola
+        //Debug.Log("Peg in"); // Mensaje por consola
         pegEntered = true; // Setea pegEntered en true, lo que terminará el turno
         PHCollisionEvents[holeNumber - 1].onTriggerEnter.RemoveListener(PegEnter); // Se desvincula del evento del agujero usado
     }
 
     void PegExit(Collider col) // Método llamado al producirse un evento de salida de peg (no usado)
     {
-        Debug.Log("Peg out"); // Mensaje por consola
+        //Debug.Log("Peg out"); // Mensaje por consola
     }
 
     void DisablePegPlaneCollisions()
@@ -398,6 +398,11 @@ public class CueManager : MonoBehaviour
             PegRotation[ii] = Pegs[ii].transform.rotation;
         }
 
+    }
+
+    public void PegGrabEvent()
+    {
+        fileManager.StoreGrabMoment();
     }
 
 
