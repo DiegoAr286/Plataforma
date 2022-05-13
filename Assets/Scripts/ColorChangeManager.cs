@@ -127,7 +127,7 @@ public class ColorChangeManager : MonoBehaviour
         {
             if ((score + mistakes) == squaresQuantity)
             {
-                Debug.Log(score);
+                //Debug.Log(score);
 
                 writeState = RunNITrigger(2);
 

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 using UnityEngine;
 using Janelia;
 
@@ -170,12 +171,15 @@ public class CueManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape))
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1); // Salir del test al menú inicial
+
         // Da el ancho de pulso
         if (writeState)
         {
             frameCounterNI++;
 
-            if (writeState && frameCounterNI == 5)
+            if (writeState && frameCounterNI == 7)
             {
                 writeState = RunNITrigger(0);
                 frameCounterNI = 0;
@@ -425,8 +429,9 @@ public class CueManager : MonoBehaviour
                     status = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 1, 0, 1, 1, 1, 1, 1, 1 }, ref numWritten);
                     break;
             }
-            fileManager.StoreTrigger(trigger);
         }
+        fileManager.StoreTrigger(trigger);
+
         return status;
     }
 

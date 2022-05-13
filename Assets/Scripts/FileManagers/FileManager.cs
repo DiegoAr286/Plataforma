@@ -83,7 +83,7 @@ public class FileManager : MonoBehaviour
         if (!File.Exists(path))
         {
             Debug.Log(path);
-            File.WriteAllText(path, "Position_x,Position_y,Position_z,Velocity_x,Velocity_y,Velocity_z,Time,Trigger,Trial\n");
+            File.WriteAllText(path, "Position_x,Position_y,Position_z,Velocity_x,Velocity_y,Velocity_z,Time,Trigger,Trial,Grab\n");
         }
         else
         {
@@ -93,7 +93,7 @@ public class FileManager : MonoBehaviour
                 path = "Assets/Resources/Files/" + fileName + "_" + i.ToString() + ".txt";
                 i++;
             }
-            File.WriteAllText(path, "Position_x,Position_y,Position_z,Velocity_x,Velocity_y,Velocity_z,Time,Trigger,Trial\n");
+            File.WriteAllText(path, "Position_x,Position_y,Position_z,Velocity_x,Velocity_y,Velocity_z,Time,Trigger,Trial,Grab\n");
         }
 
         //int noTrigger = -1;

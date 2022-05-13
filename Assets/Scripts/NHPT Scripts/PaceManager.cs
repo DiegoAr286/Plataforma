@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 using UnityEngine;
 using Janelia;
 
@@ -110,6 +111,9 @@ public class PaceManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape))
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 2); // Salir del test al menú inicial
+
         if (Input.GetKeyDown("s"))
             MirrorScene();
 
