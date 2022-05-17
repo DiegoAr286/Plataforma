@@ -351,7 +351,7 @@ public class HapticGrabberHandCB : MonoBehaviour
 		if (physicsToggleStyle != PhysicsToggleStyle.none)
 			hapticDevice.GetComponent<HapticPlugin>().PhysicsManipulationEnabled = false;
 
-        if (!cueManager.pegDeactivate)
+        if (!cueManager.pegDeactivate && cueManager.endTrial)
         {
             cueManager.DeactivatePeg();
         }

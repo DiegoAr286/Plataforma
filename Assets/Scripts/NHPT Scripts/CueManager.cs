@@ -55,6 +55,7 @@ public class CueManager : MonoBehaviour
     private bool startSphereTouch = false;
     GameObject startSphere;
 
+    public bool endTrial = false;
 
     private bool pegEntered = false; // Booleano que se vuelve true al insertar un peg, terminando el turno
 
@@ -125,21 +126,8 @@ public class CueManager : MonoBehaviour
 
         pegOrder = new List<int>() { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
         holeOrder = new List<int>() { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-        for (int i = 0; i < pegOrder.Count; i++)
-        {
-            int temp = pegOrder[i];
-            int randomIndex = Random.Range(i, pegOrder.Count);
-            pegOrder[i] = pegOrder[randomIndex];
-            pegOrder[randomIndex] = temp;
-        }
-        for (int i = 0; i < holeOrder.Count; i++)
-        {
-            int temp = holeOrder[i];
-            int randomIndex = Random.Range(i, holeOrder.Count);
-            holeOrder[i] = holeOrder[randomIndex];
-            holeOrder[randomIndex] = temp;
-        }
 
+        RandomizeOrder();
 
         pegNumber = pegOrder[pegIndex];
         holeNumber = holeOrder[pegIndex];
@@ -315,6 +303,7 @@ public class CueManager : MonoBehaviour
         if (pegIndex == pegOrder.Count)
         {
             pegIndex = 0;
+            RandomizeOrder();
         }
 
         pegNumber = pegOrder[pegIndex];
@@ -442,6 +431,24 @@ public class CueManager : MonoBehaviour
             startSphereTouch = true;
             pegDeactivate = false;
             currentTime = 0;
+        }
+    }
+
+    void RandomizeOrder()
+    {
+        for (int i = 0; i < pegOrder.Count; i++)
+        {
+            int temp = pegOrder[i];
+            int randomIndex = Random.Range(i, pegOrder.Count);
+            pegOrder[i] = pegOrder[randomIndex];
+            pegOrder[randomIndex] = temp;
+        }
+        for (int i = 0; i < holeOrder.Count; i++)
+        {
+            int temp = holeOrder[i];
+            int randomIndex = Random.Range(i, holeOrder.Count);
+            holeOrder[i] = holeOrder[randomIndex];
+            holeOrder[randomIndex] = temp;
         }
     }
 }
