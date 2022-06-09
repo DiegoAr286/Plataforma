@@ -32,7 +32,6 @@ public class FileManagerColorChangeDetection : MonoBehaviour
     {
         trialNumber.Add(trialN);
         squareQuantity.Add(squareQ);
-        squareQuantity.Add(squareQ);
         side.Add(sides);
         matches.Add(match);
         mistakes.Add(mistake);
