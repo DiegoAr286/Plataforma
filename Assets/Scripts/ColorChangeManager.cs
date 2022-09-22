@@ -56,6 +56,9 @@ public class ColorChangeManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Screen.SetResolution(1366, 768, true);
+        Application.targetFrameRate = 144;
+
         rightArrow.SetActive(false);
         leftArrow.SetActive(false);
         taskInit.SetActive(true);
@@ -117,7 +120,6 @@ public class ColorChangeManager : MonoBehaviour
                 continueClick = true;
     }
 
-
     void FixedUpdate()
     {
         if (task && continueClick)
@@ -160,9 +162,9 @@ public class ColorChangeManager : MonoBehaviour
                     leftRepetitions = 0;
                 }
 
-                if (rightRepetitions == 5)
+                if (rightRepetitions == (int)(totalRepetitions / 2))
                     leftSide = true;
-                else if (leftRepetitions == 5)
+                else if (leftRepetitions == (int)(totalRepetitions / 2))
                     leftSide = false;
                 else
                     leftSide = System.Convert.ToBoolean(Random.Range(0, 2));
@@ -276,8 +278,6 @@ public class ColorChangeManager : MonoBehaviour
         }
     }
 
-
-
     public void CheckColor()
     {
         string squareName = EventSystem.current.currentSelectedGameObject.transform.parent.transform.parent.name;
@@ -345,8 +345,6 @@ public class ColorChangeManager : MonoBehaviour
                 Debug.Log("clicked");
                 break;
         }
-        //Debug.Log("clicked");
-
     }
 
     void EnableButtons(Button[] buttons, bool enable)

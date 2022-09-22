@@ -93,6 +93,7 @@
     <None Include="Assets\NI DLLs\nicaiu.dll" />
     <None Include="Assets\Resources\Files\NBack_Files\NBack_File.txt" />
     <None Include="Assets\UI\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
+    <None Include="Assets\Resources\Files\ColorChangeDetection_Files\ColorChangeDetection_File_1.txt" />
     <None Include="Assets\Resources\Files\NHPT_SelfPaced_File.txt" />
     <None Include="Assets\Resources\Files\NHPT_CueBased_File.txt" />
     <None Include="Assets\UI\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />

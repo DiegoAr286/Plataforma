@@ -1121,7 +1121,7 @@ MonoBehaviour:
   finishSign: {fileID: 2066972547}
   center: {fileID: 1703003340}
   FileManager: {fileID: 1708053634}
-  totalRepetitions: 10
+  totalRepetitions: 2
 --- !u!4 &575118358
 Transform:
   m_ObjectHideFlags: 0
