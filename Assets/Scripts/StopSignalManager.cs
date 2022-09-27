@@ -67,6 +67,9 @@ public class StopSignalManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Screen.SetResolution(1366, 768, true);
+        Application.targetFrameRate = 144;
+
         for (int i = 0; i < Arrows.Length; i++)
         {
             Arrows[i].SetActive(false);

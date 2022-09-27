@@ -23,4 +23,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Color_Change_Detection_Task.unity
     guid: 4ccd804ffe03d34419ef6b00b85f6590
+  - enabled: 1
+    path: Assets/Scenes/Color_Comparison_Task.unity
+    guid: cec7ed45fb9ca954ba02d874e2820fc5
   m_configObjects: {}

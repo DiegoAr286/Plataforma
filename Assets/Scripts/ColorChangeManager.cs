@@ -117,7 +117,7 @@ public class ColorChangeManager : MonoBehaviour
         }
 
         if (Input.GetMouseButtonDown(0))
-                continueClick = true;
+            continueClick = true;
     }
 
     void FixedUpdate()
@@ -127,156 +127,211 @@ public class ColorChangeManager : MonoBehaviour
 
         if (squaresQuantity <= 6)
         {
-            if ((score + mistakes) == squaresQuantity)
-            {
-                writeState = RunNITrigger(2);
-
-                // Guardar datos
-                FileManager.StoreDataInBuffer(taskNumber, squaresQuantity, leftSide ? 1 : 0, score, mistakes);
-
-                for (int i = 0; i < squaresQuantity; i++)
-                {
-                    LeftSideSquares[leftSquareOrder[i]].SetActive(false);
-                    RightSideSquares[rightSquareOrder[i]].SetActive(false);
-
-                    EnableButtons(LeftSideSquares[leftSquareOrder[i]].transform.GetChild(0).GetComponentsInChildren<Button>(), false);
-                    EnableButtons(RightSideSquares[rightSquareOrder[i]].transform.GetChild(0).GetComponentsInChildren<Button>(), false);
-                }
-
-                score = 0;
-                mistakes = 0;
-                fixedFrameCounter = 0;
-                continueClick = false;
-                leftSquareOrder.Clear();
-                leftPositionsUsed.Clear();
-                rightSquareOrder.Clear();
-                rightPositionsUsed.Clear();
-            }
-
             if (fixedFrameCounter == 50)
-            {
-                if ((rightRepetitions + leftRepetitions) == totalRepetitions)
-                {
-                    squaresQuantity++;
-                    rightRepetitions = 0;
-                    leftRepetitions = 0;
-                }
-
-                if (rightRepetitions == (int)(totalRepetitions / 2))
-                    leftSide = true;
-                else if (leftRepetitions == (int)(totalRepetitions / 2))
-                    leftSide = false;
-                else
-                    leftSide = System.Convert.ToBoolean(Random.Range(0, 2));
-
-                if (leftSide)
-                {
-                    leftRepetitions++;
-                    leftArrow.SetActive(true);
-                }
-                else
-                {
-                    rightRepetitions++;
-                    rightArrow.SetActive(true);
-                }
-            }
+                TrialInit();
 
             if (fixedFrameCounter == 160)
-            {
-                if (leftSide)
-                    leftArrow.SetActive(false);
-                else
-                    rightArrow.SetActive(false);
-
-                // Generar la combinación de cuadrados random
-                for (int i = 0; i < squaresQuantity; i++)
-                {
-                    // Lado izquierdo
-                    randNumber = Random.Range(0, 9);
-                    while (leftSquareOrder.Contains(randNumber))
-                    {
-                        randNumber = Random.Range(0, 9);
-                    }
-                    leftSquareOrder.Add(randNumber);
-
-                    randNumber = Random.Range(0, 9);
-                    while (leftPositionsUsed.Contains(randNumber))
-                    {
-                        randNumber = Random.Range(0, 9);
-                    }
-                    leftPositionsUsed.Add(randNumber);
-
-                    LeftSideSquares[leftSquareOrder[i]].SetActive(true);
-                    LeftSideSquares[leftSquareOrder[i]].transform.GetChild(0).gameObject.SetActive(false);
-                    LeftSideSquares[leftSquareOrder[i]].transform.SetPositionAndRotation(leftPositions[leftPositionsUsed[i]], zeroRotation);
-
-
-                    // Lado derecho
-                    randNumber = Random.Range(0, 9);
-                    while (rightSquareOrder.Contains(randNumber))
-                    {
-                        randNumber = Random.Range(0, 9);
-                    }
-                    rightSquareOrder.Add(randNumber);
-
-                    randNumber = Random.Range(0, 9);
-                    while (rightPositionsUsed.Contains(randNumber))
-                    {
-                        randNumber = Random.Range(0, 9);
-                    }
-                    rightPositionsUsed.Add(randNumber);
-
-                    RightSideSquares[rightSquareOrder[i]].SetActive(true);
-                    RightSideSquares[rightSquareOrder[i]].transform.GetChild(0).gameObject.SetActive(false);
-                    RightSideSquares[rightSquareOrder[i]].transform.SetPositionAndRotation(rightPositions[rightPositionsUsed[i]], zeroRotation);
-
-
-                    if (leftSide)
-                        EnableButtons(LeftSideSquares[leftSquareOrder[i]].transform.GetChild(0).GetComponentsInChildren<Button>(), true);
-                    else
-                        EnableButtons(RightSideSquares[rightSquareOrder[i]].transform.GetChild(0).GetComponentsInChildren<Button>(), true);
-                }
-
-                writeState = RunNITrigger(1);
-            }
+                TrialFirstSquares();
 
             if (fixedFrameCounter == 185)
-            {
-                for (int i = 0; i < squaresQuantity; i++)
-                {
-                    LeftSideSquares[leftSquareOrder[i]].SetActive(false);
-                    RightSideSquares[rightSquareOrder[i]].SetActive(false);
-                }
-            }
+                TrialHideSquares();
 
             if (fixedFrameCounter == 315)
-            {
-                for (int i = 0; i < squaresQuantity; i++)
-                {
-                    // Lado izquierdo
-                    LeftSideSquares[leftSquareOrder[i]].SetActive(true);
-                    LeftSideSquares[leftSquareOrder[i]].transform.GetChild(0).gameObject.SetActive(true);
+                TrialSecondSquares();
 
-
-                    // Lado derecho
-                    RightSideSquares[rightSquareOrder[i]].SetActive(true);
-                    RightSideSquares[rightSquareOrder[i]].transform.GetChild(0).gameObject.SetActive(true);
-                }
-
-                taskNumber++;
-            }
+            if ((score + mistakes) == squaresQuantity)
+                TrialReset();
         }
 
-        if (squaresQuantity == 7 && task)
+        if (squaresQuantity > 6 && task)
+            TaskEnd();
+    }
+
+    private void TrialInit()
+    {
+        if ((rightRepetitions + leftRepetitions) == totalRepetitions)
         {
-            task = false;
-            finishSign.SetActive(true);
-            center.SetActive(false);
-            rightArrow.SetActive(false);
-            leftArrow.SetActive(false);
-            FileManager.WriteData();
+            squaresQuantity += 2;
+            rightRepetitions = 0;
+            leftRepetitions = 0;
+        }
+
+        if (rightRepetitions == 10)
+            leftSide = true;
+        else if (leftRepetitions == 10)
+            leftSide = false;
+        else
+            leftSide = System.Convert.ToBoolean(Random.Range(0, 2));
+
+        if (leftSide)
+        {
+            leftRepetitions++;
+            leftArrow.SetActive(true);
+        }
+        else
+        {
+            rightRepetitions++;
+            rightArrow.SetActive(true);
         }
     }
+
+    private void TrialFirstSquares()
+    {
+        if (leftSide)
+            leftArrow.SetActive(false);
+        else
+            rightArrow.SetActive(false);
+
+        GenerateSquareOrder();
+        GenerateSquarePositions();
+        ActivateSquares();
+
+        writeState = RunNITrigger(1);
+    }
+
+    private void TrialHideSquares()
+    {
+        DeactivateSquares();
+    }
+    
+    private void TrialSecondSquares()
+    {
+        ActivateButtons();
+
+        taskNumber++;
+    }
+
+    private void TrialReset()
+    {
+        writeState = RunNITrigger(2);
+
+        // Guardar datos
+        FileManager.StoreDataInBuffer(taskNumber, squaresQuantity, leftSide ? 1 : 0, score, mistakes);
+
+        for (int i = 0; i < squaresQuantity; i++)
+        {
+            LeftSideSquares[leftSquareOrder[i]].SetActive(false);
+            RightSideSquares[rightSquareOrder[i]].SetActive(false);
+
+            EnableButtons(LeftSideSquares[leftSquareOrder[i]].transform.GetChild(0).GetComponentsInChildren<Button>(), false);
+            EnableButtons(RightSideSquares[rightSquareOrder[i]].transform.GetChild(0).GetComponentsInChildren<Button>(), false);
+        }
+
+        score = 0;
+        mistakes = 0;
+        fixedFrameCounter = 0;
+        continueClick = false;
+        leftSquareOrder.Clear();
+        leftPositionsUsed.Clear();
+        rightSquareOrder.Clear();
+        rightPositionsUsed.Clear();
+    }
+
+    private void TaskEnd()
+    {
+        task = false;
+        finishSign.SetActive(true);
+        center.SetActive(false);
+        rightArrow.SetActive(false);
+        leftArrow.SetActive(false);
+        FileManager.WriteData();
+    }
+
+    private void GenerateSquareOrder()
+    {
+        // Generar la combinación de cuadrados random
+        for (int i = 0; i < squaresQuantity; i++)
+        {
+            // Lado izquierdo
+            randNumber = Random.Range(0, 9);
+            while (leftSquareOrder.Contains(randNumber))
+            {
+                randNumber = Random.Range(0, 9);
+            }
+            leftSquareOrder.Add(randNumber);
+
+            // Lado derecho
+            randNumber = Random.Range(0, 9);
+            while (rightSquareOrder.Contains(randNumber))
+            {
+                randNumber = Random.Range(0, 9);
+            }
+            rightSquareOrder.Add(randNumber);
+        }
+    }
+    private void GenerateSquarePositions()
+    {
+        // Generar la posición de cuadrados random
+        for (int i = 0; i < squaresQuantity; i++)
+        {
+            // Lado izquierdo         
+            randNumber = Random.Range(0, 9);
+            while (leftPositionsUsed.Contains(randNumber))
+            {
+                randNumber = Random.Range(0, 9);
+            }
+            leftPositionsUsed.Add(randNumber);
+
+            // Lado derecho
+            randNumber = Random.Range(0, 9);
+            
+            while (rightPositionsUsed.Contains(randNumber))
+            {
+                randNumber = Random.Range(0, 9);
+            }
+            rightPositionsUsed.Add(randNumber);
+
+        }
+    }
+
+    private void ActivateSquares()
+    {
+        // Activar cuadrados
+        for (int i = 0; i < squaresQuantity; i++)
+        {
+            // Lado izquierdo
+            LeftSideSquares[leftSquareOrder[i]].SetActive(true);
+            LeftSideSquares[leftSquareOrder[i]].transform.GetChild(0).gameObject.SetActive(false);
+            LeftSideSquares[leftSquareOrder[i]].transform.SetPositionAndRotation(leftPositions[leftPositionsUsed[i]], zeroRotation);
+
+
+            // Lado derecho
+            RightSideSquares[rightSquareOrder[i]].SetActive(true);
+            RightSideSquares[rightSquareOrder[i]].transform.GetChild(0).gameObject.SetActive(false);
+            RightSideSquares[rightSquareOrder[i]].transform.SetPositionAndRotation(rightPositions[rightPositionsUsed[i]], zeroRotation);
+
+
+            if (leftSide)
+                EnableButtons(LeftSideSquares[leftSquareOrder[i]].transform.GetChild(0).GetComponentsInChildren<Button>(), true);
+            else
+                EnableButtons(RightSideSquares[rightSquareOrder[i]].transform.GetChild(0).GetComponentsInChildren<Button>(), true);
+        }
+    }
+
+    private void DeactivateSquares()
+    {
+        for (int i = 0; i < squaresQuantity; i++)
+        {
+            LeftSideSquares[leftSquareOrder[i]].SetActive(false);
+            RightSideSquares[rightSquareOrder[i]].SetActive(false);
+        }
+    }
+
+    private void ActivateButtons()
+    {
+        for (int i = 0; i < squaresQuantity; i++)
+        {
+            // Lado izquierdo
+            LeftSideSquares[leftSquareOrder[i]].SetActive(true);
+            LeftSideSquares[leftSquareOrder[i]].transform.GetChild(0).gameObject.SetActive(true);
+
+
+            // Lado derecho
+            RightSideSquares[rightSquareOrder[i]].SetActive(true);
+            RightSideSquares[rightSquareOrder[i]].transform.GetChild(0).gameObject.SetActive(true);
+        }
+    }
+
 
     public void CheckColor()
     {

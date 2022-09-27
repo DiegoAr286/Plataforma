@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class MainMenu : MonoBehaviour
 {
-    public int paradigmID = 0;  // 1: 9-Hole Peg Test
+    public int paradigmID = 0;
     //public int paradigmOptionsID = 0; 
 
     public GameObject ConfigMenuP1_Obj;
@@ -49,6 +49,8 @@ public class MainMenu : MonoBehaviour
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 4);
         if (paradigmID == 5)
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 5);
+        if (paradigmID == 6)
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 6);
     }
 
     public void QuitSoftware()
@@ -102,6 +104,14 @@ public class MainMenu : MonoBehaviour
         if (ParadigmIndex == 5) // 5: Color Change Detection Task
         {
             paradigmID = 5;
+            ConfigMenuP1_Obj.SetActive(false);
+            ConfigMenuP2_Obj.SetActive(false);
+            //ConfigMenuP3_Obj.SetActive(false);
+        }
+
+        if (ParadigmIndex == 6) // 5: Color Comparison Task
+        {
+            paradigmID = 6;
             ConfigMenuP1_Obj.SetActive(false);
             ConfigMenuP2_Obj.SetActive(false);
             //ConfigMenuP3_Obj.SetActive(false);
