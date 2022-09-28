@@ -30,6 +30,8 @@ public class FileManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        fileName = PlayerPrefs.GetString("Name") + "_" + fileName;
+
         stylusPosition = new List<Vector3>();
         stylusVelocity = new List<Vector3>();
         timeVector = new List<float>();

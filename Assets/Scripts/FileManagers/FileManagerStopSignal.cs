@@ -22,6 +22,8 @@ public class FileManagerStopSignal : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        fileName = PlayerPrefs.GetString("Name") + "_" + fileName;
+
         trialNumber = new List<int>();
         trialType = new List<int>();
         requiredResponse = new List<int>();

@@ -81,6 +81,7 @@
     <Compile Include="Assets\HapticScripts\HapticFitToCamera.cs" />
     <Compile Include="Assets\Scripts\VideoRecord.cs" />
     <Compile Include="Assets\Scripts\NHPT Scripts\PaceManager.cs" />
+    <Compile Include="Assets\Scripts\FilenameMenu.cs" />
     <Compile Include="Assets\Scripts\FileManagers\FileManager.cs" />
     <Compile Include="Assets\Scripts\FileManagers\FileManagerNBack.cs" />
   </ItemGroup>

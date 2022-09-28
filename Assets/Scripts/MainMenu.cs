@@ -13,13 +13,15 @@ public class MainMenu : MonoBehaviour
     public GameObject ConfigMenuP1_Obj;
     public GameObject ConfigMenuP2_Obj;
 
+    public GameObject FilenameMenu;
+
     public void Start()
     {
         //if (SceneManager.GetActiveScene().name == "NHPT_Scene 2")
         //    SceneManager.UnloadSceneAsync(1);   //Dejo unicamente cargado la escena 0, que es el menu. Si la escena de un paradigma está cargada, al poner comenzar, no redirige al paradigma a veces.
-        for (int i = 1; i < SceneManager.sceneCount; i++)
+        for (int i = 1; i < SceneManager.sceneCountInBuildSettings; i++)
         {
-            if (SceneManager.GetSceneAt(i).isLoaded)
+            if (SceneManager.GetSceneByBuildIndex(i).isLoaded)
             {
                 SceneManager.UnloadSceneAsync(i);
             }
@@ -28,10 +30,11 @@ public class MainMenu : MonoBehaviour
         //Screen.fullScreen = true;
         Screen.SetResolution(1366, 768, true);
 
-        //Apago todos los objetos para que no se muestre el menu de Config al iniciar
+        //Apago todos los objetos para que no se muestre el menú de Config al iniciar
         ConfigMenuP1_Obj.SetActive(false);
         ConfigMenuP2_Obj.SetActive(false);
-        //ConfigMenuP3_Obj.SetActive(false)
+
+        FilenameMenu.SetActive(false);
     }
 
 
@@ -61,62 +64,54 @@ public class MainMenu : MonoBehaviour
 
     public void SetParadigm(int ParadigmIndex)
     {
-        if (ParadigmIndex == 0)
+        switch (ParadigmIndex)
         {
-            paradigmID = 0;
-            ConfigMenuP1_Obj.SetActive(false);
-            ConfigMenuP2_Obj.SetActive(false);
-            //ConfigMenuP3_Obj.SetActive(false);
+            case 0:
+                paradigmID = 0;
+                ConfigMenuP1_Obj.SetActive(false);
+                ConfigMenuP2_Obj.SetActive(false);
+                FilenameMenu.SetActive(false);
+                break;
+
+            case 1: // 1: 9-Hole Peg Test (cue based)
+                paradigmID = 1;
+                ConfigMenuP1_Obj.SetActive(true);
+                ConfigMenuP2_Obj.SetActive(false);
+                break;
+
+            case 2: // 2: 9-Hole Peg Test (self paced)
+                paradigmID = 2;
+                ConfigMenuP1_Obj.SetActive(false);
+                ConfigMenuP2_Obj.SetActive(true);
+                break;
+
+            case 3: // 3: N-Back Task
+                paradigmID = 3;
+                ConfigMenuP1_Obj.SetActive(false);
+                ConfigMenuP2_Obj.SetActive(false);
+                break;
+
+            case 4: // 4: Stop Signal Task
+                paradigmID = 4;
+                ConfigMenuP1_Obj.SetActive(false);
+                ConfigMenuP2_Obj.SetActive(false);
+                break;
+
+            case 5: // 5: Color Change Detection Task
+                paradigmID = 5;
+                ConfigMenuP1_Obj.SetActive(false);
+                ConfigMenuP2_Obj.SetActive(false);
+                break;
+
+            case 6: // 6: Color Comparison Task
+                paradigmID = 6;
+                ConfigMenuP1_Obj.SetActive(false);
+                ConfigMenuP2_Obj.SetActive(false);
+                break;
         }
 
-        if (ParadigmIndex == 1) // 1: 9-Hole Peg Test (cue based)
-        {
-            paradigmID = 1; 
-            ConfigMenuP1_Obj.SetActive(true);
-            ConfigMenuP2_Obj.SetActive(false);
-            //ConfigMenuP3_Obj.SetActive(false);
-        }
-
-        if (ParadigmIndex == 2) // 2: 9-Hole Peg Test (self paced)
-        {
-            paradigmID = 2;
-            ConfigMenuP1_Obj.SetActive(false);
-            ConfigMenuP2_Obj.SetActive(true);
-            //ConfigMenuP3_Obj.SetActive(false)
-        }
-
-        if (ParadigmIndex == 3) // 3: N-Back Task
-        {
-            paradigmID = 3;
-            ConfigMenuP1_Obj.SetActive(false);
-            ConfigMenuP2_Obj.SetActive(false);
-            //ConfigMenuP3_Obj.SetActive(true)
-        }
-        
-        if (ParadigmIndex == 4) // 4: Stop Signal Task
-        {
-            paradigmID = 4;
-            ConfigMenuP1_Obj.SetActive(false);
-            ConfigMenuP2_Obj.SetActive(false);
-            //ConfigMenuP3_Obj.SetActive(false);
-        }
-        
-        if (ParadigmIndex == 5) // 5: Color Change Detection Task
-        {
-            paradigmID = 5;
-            ConfigMenuP1_Obj.SetActive(false);
-            ConfigMenuP2_Obj.SetActive(false);
-            //ConfigMenuP3_Obj.SetActive(false);
-        }
-
-        if (ParadigmIndex == 6) // 5: Color Comparison Task
-        {
-            paradigmID = 6;
-            ConfigMenuP1_Obj.SetActive(false);
-            ConfigMenuP2_Obj.SetActive(false);
-            //ConfigMenuP3_Obj.SetActive(false);
-        }
-
+        if (ParadigmIndex != 0)
+            FilenameMenu.SetActive(true);
     }
 
 }

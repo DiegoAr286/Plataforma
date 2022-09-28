@@ -20,6 +20,8 @@ public class FileManagerColorComparison : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        fileName = PlayerPrefs.GetString("Name") + "_" + fileName;
+
         trialNumber = new List<int>();
         squareQuantity = new List<int>();
         side = new List<int>();
