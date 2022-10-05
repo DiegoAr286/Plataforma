@@ -156,9 +156,9 @@ public class ColorChangeManager : MonoBehaviour
             leftRepetitions = 0;
         }
 
-        if (rightRepetitions == 10)
+        if (rightRepetitions == 5)
             leftSide = true;
-        else if (leftRepetitions == 10)
+        else if (leftRepetitions == 5)
             leftSide = false;
         else
             leftSide = System.Convert.ToBoolean(Random.Range(0, 2));
