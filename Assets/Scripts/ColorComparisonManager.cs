@@ -32,6 +32,7 @@ public class ColorComparisonManager : MonoBehaviour
 
     private bool randomTrial = false; // Pasado a int, 1 -> coincide; 0 -> no coincide
     private int randomTrials = 0;
+    private int notRandomTrials = 0;
 
     private int squaresQuantity = 2;
     private int randNumber;
@@ -210,6 +211,8 @@ public class ColorComparisonManager : MonoBehaviour
 
         if (randomTrials == (int)(totalRepetitions / 2))
             randomTrial = false;
+        else if (notRandomTrials == (int)(totalRepetitions / 2))
+            randomTrial = true;
         else
             randomTrial = System.Convert.ToBoolean(Random.Range(0, 2));
 
@@ -219,6 +222,8 @@ public class ColorComparisonManager : MonoBehaviour
 
             GenerateSquareOrder(Random.Range(1, squaresQuantity + 1), false);
         }
+        else
+            notRandomTrials++;
     }
 
     private void TrialSecondSquares()
