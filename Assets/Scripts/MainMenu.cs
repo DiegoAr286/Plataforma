@@ -15,8 +15,20 @@ public class MainMenu : MonoBehaviour
 
     public GameObject FilenameMenu;
 
+    private void Awake()
+    {
+        
+    }
     public void Start()
     {
+        //Screen.fullScreen = true;
+        //if (!Display.displays[1].active)
+        Screen.SetResolution(1366, 768, true);
+        if (Display.displays.Length > 0)
+        {
+            Display.displays[1].Activate();
+            //GetComponentInChildren<Canvas>().targetDisplay = 1;
+        }
         //if (SceneManager.GetActiveScene().name == "NHPT_Scene 2")
         //    SceneManager.UnloadSceneAsync(1);   //Dejo unicamente cargado la escena 0, que es el menu. Si la escena de un paradigma está cargada, al poner comenzar, no redirige al paradigma a veces.
         for (int i = 1; i < SceneManager.sceneCountInBuildSettings; i++)
@@ -26,9 +38,6 @@ public class MainMenu : MonoBehaviour
                 SceneManager.UnloadSceneAsync(i);
             }
         }
-
-        //Screen.fullScreen = true;
-        Screen.SetResolution(1366, 768, true);
 
         //Apago todos los objetos para que no se muestre el menú de Config al iniciar
         ConfigMenuP1_Obj.SetActive(false);

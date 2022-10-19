@@ -120,7 +120,7 @@ public class ColorComparisonManager : MonoBehaviour
             center.SetActive(true);
         }
         if (Input.GetKeyDown(KeyCode.Escape))
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 6); // Salir del test al menú inicial
+            SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex - 6); // Salir del test al menú inicial
 
         
         // Entrada digital es 257 en alto, 1 para click izquierdo y 256 para click derecho
@@ -270,6 +270,9 @@ public class ColorComparisonManager : MonoBehaviour
         rightArrow.SetActive(false);
         leftArrow.SetActive(false);
         FileManager.WriteData();
+
+        for (int i = 0; i < 8; i++)
+            NiDaqMx.ClearOutputTask(digitalOutputParams[i]);
     }
 
     private void GenerateSquareOrder(int squaresAmount = 0, bool listsCleared = true)

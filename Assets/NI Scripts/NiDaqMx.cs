@@ -498,6 +498,12 @@ namespace Janelia
             return StatusIndicatesSuccess(status);
         }
 
+        public static void ClearOutputTask(DigitalOutputParams p)
+        {
+            ulong taskHandle = _digitalOutputParamsToTaskHandle[p];
+            DAQmxClearTask(taskHandle);
+        }
+
 
         // ================================================================================================================== //
 
