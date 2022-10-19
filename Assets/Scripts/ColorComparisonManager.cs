@@ -122,16 +122,7 @@ public class ColorComparisonManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape))
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 6); // Salir del test al menú inicial
 
-        if (writeState)
-        {
-            frameCounterNI++;
-
-            if (writeState && frameCounterNI == 7)
-            {
-                writeState = RunNITrigger(0, lines);
-                frameCounterNI = 0;
-            }
-        }
+        
         // Entrada digital es 257 en alto, 1 para click izquierdo y 256 para click derecho
         if (readDigitalData[0] == 1 && !comparisonMade && comparisonWindow)
         {
@@ -176,6 +167,8 @@ public class ColorComparisonManager : MonoBehaviour
         }
         if (squaresQuantity > 6 && task)
             TaskEnd();
+
+        TriggerPulseWidth();
     }
 
     private void TrialInit()
@@ -384,6 +377,19 @@ public class ColorComparisonManager : MonoBehaviour
                 writeState = RunNITrigger(5, lines);
             else
                 writeState = RunNITrigger(4, lines);
+        }
+    }
+        private void TriggerPulseWidth()
+    {
+        if (writeState)
+        {
+            frameCounterNI++;
+
+            if (writeState && frameCounterNI == 7)
+            {
+                writeState = RunNITrigger(0, lines);
+                frameCounterNI = 0;
+            }
         }
     }
 

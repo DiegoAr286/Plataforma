@@ -45,9 +45,10 @@ public class ColorChangeManager : MonoBehaviour
 
     private int fixedFrameCounter = 0;
 
-    NiDaqMx.DigitalOutputParams digitalOutputParams; // Parámetros NI
+    NiDaqMx.DigitalOutputParams[] digitalOutputParams; // Parámetros NI
     private bool writeState = false;
     private int numWritten = 0;
+    private int lines = 3; // Líneas digitales a escribir
     private int frameCounterNI = 0;
 
     private bool continueClick = true; // Click para continuar con la tarea
@@ -86,9 +87,14 @@ public class ColorChangeManager : MonoBehaviour
         rightPositionsUsed = new List<int>();
 
         // Inicializa variables NI
-        digitalOutputParams = new NiDaqMx.DigitalOutputParams();
-        _ = NiDaqMx.CreateDigitalOutput(digitalOutputParams);
-        writeState = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 1, 1, 1, 1, 1, 1, 1, 1 }, ref numWritten);
+        digitalOutputParams = new NiDaqMx.DigitalOutputParams[8];
+        for (int i = 0; i < 8; i++)
+        {
+            digitalOutputParams[i] = new NiDaqMx.DigitalOutputParams();
+            _ = NiDaqMx.CreateDigitalOutput(digitalOutputParams[i], false, i);
+        }
+        writeState = RunNITrigger(0, lines);
+
 
         Time.fixedDeltaTime = 0.01F;
     }
@@ -104,17 +110,6 @@ public class ColorChangeManager : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.Escape))
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 5); // Salir del test al menú inicial
-
-        if (writeState)
-        {
-            frameCounterNI++;
-
-            if (writeState && frameCounterNI == 7)
-            {
-                writeState = RunNITrigger(0);
-                frameCounterNI = 0;
-            }
-        }
 
         if (Input.GetMouseButtonDown(0))
             continueClick = true;
@@ -145,6 +140,8 @@ public class ColorChangeManager : MonoBehaviour
 
         if (squaresQuantity > 6 && task)
             TaskEnd();
+
+        TriggerPulseWidth();
     }
 
     private void TrialInit()
@@ -186,7 +183,7 @@ public class ColorChangeManager : MonoBehaviour
         GenerateSquarePositions();
         ActivateSquares();
 
-        writeState = RunNITrigger(1);
+        writeState = RunNITrigger(1, lines);
     }
 
     private void TrialHideSquares()
@@ -203,7 +200,7 @@ public class ColorChangeManager : MonoBehaviour
 
     private void TrialReset()
     {
-        writeState = RunNITrigger(2);
+        TrialResetTrigger();
 
         // Guardar datos
         FileManager.StoreDataInBuffer(taskNumber, squaresQuantity, leftSide ? 1 : 0, score, mistakes);
@@ -408,26 +405,80 @@ public class ColorChangeManager : MonoBehaviour
             buttons[i].enabled = enable;
     }
 
-    public bool RunNITrigger(int trigger)
+    private void TrialResetTrigger()
+    {
+        if (leftSide)
+        {
+            if (score == 1)
+                writeState = RunNITrigger(3, lines);
+            else
+                writeState = RunNITrigger(2, lines);
+        }
+        else
+        {
+            if (score == 1)
+                writeState = RunNITrigger(5, lines);
+            else
+                writeState = RunNITrigger(4, lines);
+        }
+    }
+
+    private void TriggerPulseWidth()
+    {
+        if (writeState)
+        {
+            frameCounterNI++;
+
+            if (writeState && frameCounterNI == 7)
+            {
+                writeState = RunNITrigger(0, lines);
+                frameCounterNI = 0;
+            }
+        }
+    }
+    
+
+    public bool RunNITrigger(int trigger, int lines)
     {
         bool status = false;
-
+        uint[] message = { 1 };
         switch (trigger)
         {
             case 0:
-                _ = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 1, 1, 1, 1, 1, 1, 1, 1 }, ref numWritten);
+                message = new uint[] { 1, 1, 1, 1, 1, 1, 1, 1 };
                 status = false;
                 break;
             case 1:
-                status = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 0, 1, 1, 1, 1, 1, 1, 1 }, ref numWritten);
+                message = new uint[] { 0, 0, 0, 1, 1, 1, 1, 1 };
                 break;
             case 2:
-                status = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 1, 0, 1, 1, 1, 1, 1, 1 }, ref numWritten);
+                message = new uint[] { 1, 0, 0, 1, 1, 1, 1, 1 }; // Trial izquierdo e incorrecto
                 break;
             case 3:
-                status = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 0, 0, 1, 1, 1, 1, 1, 1 }, ref numWritten);
+                message = new uint[] { 1, 1, 0, 1, 1, 1, 1, 1 }; // Trial izquierdo y correcto
+                break;
+            case 4:
+                message = new uint[] { 0, 0, 1, 0, 1, 1, 1, 1 }; // Trial derecho e incorrecto
+                break;
+            case 5:
+                message = new uint[] { 0, 1, 0, 1, 0, 1, 1, 1 }; // Trial derecho y correcto
+                break;
+            case 6:
+                message = new uint[] { 1, 1, 1, 1, 1, 0, 1, 1 };
+                break;
+            case 7:
+                message = new uint[] { 1, 1, 1, 1, 1, 1, 0, 1 };
+                break;
+            case 8:
+                message = new uint[] { 1, 1, 1, 1, 1, 1, 1, 0 };
+                break;
+            case 9:
+                message = new uint[] { 0, 0, 0, 0, 0, 0, 0, 0 };
                 break;
         }
+
+        for (int i = 0; i < lines; i++)
+            status = NiDaqMx.WriteDigitalValue(digitalOutputParams[i], new uint[] { message[i] }, ref numWritten);
         return status;
     }
 }
