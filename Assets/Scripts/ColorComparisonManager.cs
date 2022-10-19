@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine;
-using Janelia_2;
+using Janelia;
 
 public class ColorComparisonManager : MonoBehaviour
 {
@@ -51,12 +51,18 @@ public class ColorComparisonManager : MonoBehaviour
 
     private int fixedFrameCounter = 0;
 
-    NiDaqMx_2.DigitalOutputParams[] digitalOutputParams; // Parámetros NI
+    // Salida digital
+    NiDaqMx.DigitalOutputParams[] digitalOutputParams; // Parámetros NI
     private bool writeState = false;
     private int numWritten = 0;
     private int lines = 3; // Líneas digitales a escribir
     private int frameCounterNI = 0;
 
+    // Entrada digital
+    NiDaqMx.DigitalInputParams digitalInputParams; // Parámetros NI
+    private uint[] readDigitalData;
+    private int numReadPerChannel;
+    private int numBytesPerSamp;
 
     // Start is called before the first frame update
     void Start()
@@ -88,13 +94,18 @@ public class ColorComparisonManager : MonoBehaviour
         rightPositionsUsed = new List<int>();
 
         // Inicializa variables NI
-        digitalOutputParams = new NiDaqMx_2.DigitalOutputParams[8];
+        digitalOutputParams = new NiDaqMx.DigitalOutputParams[8];
         for (int i = 0; i < 8; i++)
         {
-            digitalOutputParams[i] = new NiDaqMx_2.DigitalOutputParams();
-            _ = NiDaqMx_2.CreateDigitalOutput(digitalOutputParams[i], i);
+            digitalOutputParams[i] = new NiDaqMx.DigitalOutputParams();
+            _ = NiDaqMx.CreateDigitalOutput(digitalOutputParams[i], false, i);
         }
         writeState = RunNITrigger(0, lines);
+
+
+        digitalInputParams = new NiDaqMx.DigitalInputParams();
+        _ = NiDaqMx.CreateDigitalInput(digitalInputParams);
+        readDigitalData = new uint[32];
 
         Time.fixedDeltaTime = 0.01F;
     }
@@ -121,8 +132,8 @@ public class ColorComparisonManager : MonoBehaviour
                 frameCounterNI = 0;
             }
         }
-
-        if (Input.GetKeyDown(KeyCode.S) && !comparisonMade && comparisonWindow)
+        // Entrada digital es 257 en alto, 1 para click izquierdo y 256 para click derecho
+        if (readDigitalData[0] == 1 && !comparisonMade && comparisonWindow)
         {
             if (!randomTrial)
                 score = 1;
@@ -130,7 +141,7 @@ public class ColorComparisonManager : MonoBehaviour
             DeactivateSquares();
         }
 
-        if (Input.GetKeyDown(KeyCode.N) && !comparisonMade && comparisonWindow)
+        if (readDigitalData[0] == 256 && !comparisonMade && comparisonWindow)
         {
             if (randomTrial)
                 score = 1;
@@ -139,7 +150,6 @@ public class ColorComparisonManager : MonoBehaviour
         }
     }
 
-
     void FixedUpdate()
     {
         if (task)
@@ -147,6 +157,8 @@ public class ColorComparisonManager : MonoBehaviour
 
         if (squaresQuantity <= 6)
         {
+            _ = NiDaqMx.ReadFromDigitalInput(digitalInputParams, ref readDigitalData, ref numReadPerChannel, ref numBytesPerSamp);
+
             if (fixedFrameCounter == 50)
                 TrialInit();
 
@@ -415,7 +427,7 @@ public class ColorComparisonManager : MonoBehaviour
         }
 
         for (int i = 0; i < lines; i++)
-            status = NiDaqMx_2.WriteDigitalValue(digitalOutputParams[i], new uint[] { message[i] }, ref numWritten);
+            status = NiDaqMx.WriteDigitalValue(digitalOutputParams[i], new uint[] { message[i] }, ref numWritten);
         return status;
     }
 }

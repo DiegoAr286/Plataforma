@@ -439,10 +439,9 @@ namespace Janelia
             //}
 
         }
-
-        public static bool CreateDigitalOutput(DigitalOutputParams p)
+        public static bool CreateDigitalOutput(DigitalOutputParams p, bool allLines = true, int line = 0)
         {
-            ulong taskHandle = 0;
+            ulong taskHandle = (ulong)line;
             if (!Init(p.deviceName, ref taskHandle))
             {
                 return false;
@@ -453,7 +452,12 @@ namespace Janelia
             // https://zone.ni.com/reference/en-XX/help/370466AH-01/mxcncpts/physchannames/
             //string fullChannelNames = String.Join(", ", p.channelNames.Select(c => p.deviceName + "/" + c));
 
-            byte[] physicalChannels = MakeCString("Dev1/port0/line0:7");
+            byte[] physicalChannels;
+            if (allLines)
+                physicalChannels = MakeCString("Dev1/port0/line0:7");
+            else
+                physicalChannels = MakeCString("Dev1/port0/line" + line);
+
             byte[] namesToAssignToChannels = MakeCString("");
             int status = DAQmxCreateDOChan(taskHandle, physicalChannels, namesToAssignToChannels, DAQmx_Val_ChanForAllLines);
 
@@ -465,8 +469,6 @@ namespace Janelia
             // Note there is no call to `DAQmxCfgSampClkTiming`.
             // So does writing use "on demand" timing?
             // http://zone.ni.com/reference/en-XX/help/370466AH-01/mxcncpts/smpletimingtype/
-
-            //p.inUse = true;
 
             status = DAQmxStartTask(taskHandle);
             return StatusIndicatesSuccess(status);
@@ -484,12 +486,18 @@ namespace Janelia
             numWritten = 0;
             IntPtr reserved = IntPtr.Zero;
             //int numSampsPerChan = data.Length / p.channelNames.Length;
+
+            _ = DAQmxStartTask(taskHandle);
+
             int status = DAQmxWriteDigitalLines(taskHandle, 1, false, 0, DAQmx_Val_GroupByChannel, data, ref numWritten, reserved);
+
+            _ = DAQmxStopTask(taskHandle);
 
             //int status = DAQmxWriteAnalogF64(taskHandle, numSampsPerChan, false, 0, DAQmx_Val_GroupByChannel, data, ref numWritten, reserved);
 
             return StatusIndicatesSuccess(status);
         }
+
 
         // ================================================================================================================== //
 
@@ -500,15 +508,15 @@ namespace Janelia
         public class DigitalInputParams
         {
             public string deviceName = "Dev1";
-            
+
             public double samplesPerSec = 1000.0;
-            
+
             // The sample buffer size must be big enough for all samples from all channels,
             // since they are all read at once.
             public ulong sampleBufferSize = 1000;
-            
+
             public double timeoutSecs = 10.0;
-            
+
         }
 
         public static bool CreateDigitalInput(DigitalInputParams p)
@@ -533,7 +541,7 @@ namespace Janelia
                 {
                     return false;
                 }
-                
+
                 status = DAQmxCfgChangeDetectionTiming(taskHandle, emptyCString, physicalChannels, DAQmx_Val_ContSamps, 4);
                 if (!StatusIndicatesSuccess(status))
                 {
@@ -598,7 +606,7 @@ namespace Janelia
         private const uint DAQmx_Val_GroupByChannel = 0;
 
         private const uint DAQmx_Val_GroupByScanNumber = 1;
-        
+
         private const uint DAQmx_Val_ChanForAllLines = 1;
 
         private const uint DAQmx_Val_ChanPerLine = 0;
