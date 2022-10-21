@@ -17,18 +17,20 @@ public class MainMenu : MonoBehaviour
 
     private void Awake()
     {
-        
+        Screen.SetResolution(1366, 768, true);
+        if (Display.displays.Length == 0)
+            return;
+
+        if (!Display.displays[1].active)
+            Display.displays[1].Activate();
+
+        //GetComponentInParent<Canvas>().targetDisplay = 1;
     }
     public void Start()
     {
         //Screen.fullScreen = true;
         //if (!Display.displays[1].active)
-        Screen.SetResolution(1366, 768, true);
-        if (Display.displays.Length > 0)
-        {
-            Display.displays[1].Activate();
-            //GetComponentInChildren<Canvas>().targetDisplay = 1;
-        }
+
         //if (SceneManager.GetActiveScene().name == "NHPT_Scene 2")
         //    SceneManager.UnloadSceneAsync(1);   //Dejo unicamente cargado la escena 0, que es el menu. Si la escena de un paradigma está cargada, al poner comenzar, no redirige al paradigma a veces.
         for (int i = 1; i < SceneManager.sceneCountInBuildSettings; i++)
@@ -52,17 +54,17 @@ public class MainMenu : MonoBehaviour
         if (paradigmID == 0)
             Debug.Log("paradigmID= " + paradigmID + ". Cargue un Paradigma");
         if (paradigmID == 1)
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+            SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex + 1);
         if (paradigmID == 2)
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 2);
+            SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex + 2);
         if (paradigmID == 3)
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 3);
+            SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex + 3);
         if (paradigmID == 4)
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 4);
+            SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex + 4);
         if (paradigmID == 5)
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 5);
+            SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex + 5);
         if (paradigmID == 6)
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 6);
+            SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex + 6);
     }
 
     public void QuitSoftware()

@@ -18,6 +18,8 @@ public class ColorComparisonManager : MonoBehaviour
 
     public FileManagerColorComparison FileManager;
 
+    public Canvas canvas;
+
     private Quaternion zeroRotation = Quaternion.identity;
 
     private Vector3[] leftPositions;
@@ -64,12 +66,18 @@ public class ColorComparisonManager : MonoBehaviour
     private int numReadPerChannel;
     private int numBytesPerSamp;
 
+    private void Awake()
+    {
+        if (Display.displays[1].active)
+            canvas.targetDisplay = 1;
+
+        Screen.SetResolution(1366, 768, true);
+        Application.targetFrameRate = 144;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
-        Screen.SetResolution(1366, 768, true);
-        Application.targetFrameRate = 144;
-
         rightArrow.SetActive(false);
         leftArrow.SetActive(false);
         taskInit.SetActive(true);
@@ -270,9 +278,6 @@ public class ColorComparisonManager : MonoBehaviour
         rightArrow.SetActive(false);
         leftArrow.SetActive(false);
         FileManager.WriteData();
-
-        for (int i = 0; i < 8; i++)
-            NiDaqMx.ClearOutputTask(digitalOutputParams[i]);
     }
 
     private void GenerateSquareOrder(int squaresAmount = 0, bool listsCleared = true)
@@ -382,7 +387,7 @@ public class ColorComparisonManager : MonoBehaviour
                 writeState = RunNITrigger(4, lines);
         }
     }
-        private void TriggerPulseWidth()
+    private void TriggerPulseWidth()
     {
         if (writeState)
         {

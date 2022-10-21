@@ -16,6 +16,8 @@ public class NBackManager : MonoBehaviour
 
     public FileManagerNBack FileManager;
 
+    public Canvas canvas;
+
     [Range(2, 3)] public int nBack = 2; // Número N de N-Back
 
     private bool warmUp = false; // Booleano que marca la etapa de calentamiento
@@ -47,23 +49,31 @@ public class NBackManager : MonoBehaviour
     private double reactionTime;
     private bool matchingTrial = false;
 
-    NiDaqMx.DigitalOutputParams digitalOutputParams; // Parámetros NI
-    NiDaqMx.DigitalInputParams digitalInputParams; // Parámetros NI
-    //private bool readState = false;
+    // Salida digital
+    NiDaqMx.DigitalOutputParams[] digitalOutputParams; // Parámetros NI
     private bool writeState = false;
-    private int frameCounterNI = 0;
-    private uint[] readDigitalData;
     private int numWritten = 0;
+    private int lines = 3; // Líneas digitales a escribir
+    private int frameCounterNI = 0;
 
+    // Entrada digital
+    NiDaqMx.DigitalInputParams digitalInputParams; // Parámetros NI
+    private uint[] readDigitalData;
     private int numReadPerChannel;
     private int numBytesPerSamp;
+
+    private void Awake()
+    {
+        if (Display.displays[1].active)
+            canvas.targetDisplay = 1;
+
+        Screen.SetResolution(1366, 768, true);
+        Application.targetFrameRate = 144;
+    }
 
     // Start is called before the first frame update
     void Start()
     {
-        Screen.SetResolution(1366, 768, true);
-        Application.targetFrameRate = 144;
-
         for (int i = 0; i < Letters.Length; i++)
             Letters[i].SetActive(false); // Desactiva las letras
 
@@ -74,12 +84,16 @@ public class NBackManager : MonoBehaviour
 
         LetterOrder(nBack);
 
-        Time.fixedDeltaTime = 0.01F; // FixedUpdate a 100Hz ?
+        Time.fixedDeltaTime = 0.01F; // FixedUpdate a 100Hz
 
         // Inicializa variables NI
-        digitalOutputParams = new NiDaqMx.DigitalOutputParams();
-        _ = NiDaqMx.CreateDigitalOutput(digitalOutputParams);
-        writeState = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 1, 1, 1, 1, 1, 1, 1, 1 }, ref numWritten);
+        digitalOutputParams = new NiDaqMx.DigitalOutputParams[8];
+        for (int i = 0; i < 8; i++)
+        {
+            digitalOutputParams[i] = new NiDaqMx.DigitalOutputParams();
+            _ = NiDaqMx.CreateDigitalOutput(digitalOutputParams[i], false, i);
+        }
+        writeState = RunNITrigger(0, lines);
 
         digitalInputParams = new NiDaqMx.DigitalInputParams();
         _ = NiDaqMx.CreateDigitalInput(digitalInputParams);
@@ -133,7 +147,7 @@ public class NBackManager : MonoBehaviour
             alreadyPressed = true;
 
             if (task)
-                writeState = RunNITrigger(1);
+                writeState = RunNITrigger(1, lines);
         }
 
         if (frameCounter < 50)
@@ -144,17 +158,7 @@ public class NBackManager : MonoBehaviour
             incorrectMarker.SetActive(false);
         }
 
-        if (writeState)
-        {
-            frameCounterNI++;
-
-            if (writeState && frameCounterNI == 7)
-            {
-                writeState = RunNITrigger(0);
-                frameCounterNI = 0;
-            }
-        }
-
+        TriggerPulseWidth();
     }
 
     void FixedUpdate()
@@ -246,7 +250,7 @@ public class NBackManager : MonoBehaviour
                         Letters[letter].SetActive(true);
                         activeLetter = true;
                         initTime = Time.realtimeSinceStartupAsDouble;
-                        writeState = RunNITrigger(2);
+                        writeState = RunNITrigger(2, lines);
 
                         if (validTime && !matchTrial)
                             missTrial = true;
@@ -430,26 +434,62 @@ public class NBackManager : MonoBehaviour
         //}
 
     }
-    public bool RunNITrigger(int trigger)
+
+    private void TriggerPulseWidth()
+    {
+        if (writeState)
+        {
+            frameCounterNI++;
+
+            if (writeState && frameCounterNI == 7)
+            {
+                writeState = RunNITrigger(0, lines);
+                frameCounterNI = 0;
+            }
+        }
+    }
+
+    public bool RunNITrigger(int trigger, int lines)
     {
         bool status = false;
-
+        uint[] message = { 1 };
         switch (trigger)
         {
             case 0:
-                _ = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 1, 1, 1, 1, 1, 1, 1, 1 }, ref numWritten);
+                message = new uint[] { 1, 1, 1, 1, 1, 1, 1, 1 };
                 status = false;
                 break;
             case 1:
-                status = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 0, 1, 1, 1, 1, 1, 1, 1 }, ref numWritten);
+                message = new uint[] { 0, 0, 0, 1, 1, 1, 1, 1 };
                 break;
             case 2:
-                status = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 1, 0, 1, 1, 1, 1, 1, 1 }, ref numWritten);
+                message = new uint[] { 1, 0, 0, 1, 1, 1, 1, 1 }; // Trial izquierdo e incorrecto
                 break;
             case 3:
-                status = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 0, 0, 1, 1, 1, 1, 1, 1 }, ref numWritten);
+                message = new uint[] { 1, 1, 0, 1, 1, 1, 1, 1 }; // Trial izquierdo y correcto
+                break;
+            case 4:
+                message = new uint[] { 0, 0, 1, 0, 1, 1, 1, 1 }; // Trial derecho e incorrecto
+                break;
+            case 5:
+                message = new uint[] { 0, 1, 0, 1, 0, 1, 1, 1 }; // Trial derecho y correcto
+                break;
+            case 6:
+                message = new uint[] { 1, 1, 1, 1, 1, 0, 1, 1 };
+                break;
+            case 7:
+                message = new uint[] { 1, 1, 1, 1, 1, 1, 0, 1 };
+                break;
+            case 8:
+                message = new uint[] { 1, 1, 1, 1, 1, 1, 1, 0 };
+                break;
+            case 9:
+                message = new uint[] { 0, 0, 0, 0, 0, 0, 0, 0 };
                 break;
         }
+
+        for (int i = 0; i < lines; i++)
+            status = NiDaqMx.WriteDigitalValue(digitalOutputParams[i], new uint[] { message[i] }, ref numWritten);
         return status;
     }
 }

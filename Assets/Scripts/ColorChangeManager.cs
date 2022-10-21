@@ -18,6 +18,8 @@ public class ColorChangeManager : MonoBehaviour
 
     public FileManagerColorChangeDetection FileManager;
 
+    public Canvas canvas;
+
     private Quaternion zeroRotation = Quaternion.identity;
 
     private Vector3[] leftPositions;
@@ -53,13 +55,19 @@ public class ColorChangeManager : MonoBehaviour
 
     private bool continueClick = true; // Click para continuar con la tarea
 
+    private void Awake()
+    {
+        if (Display.displays[1].active)
+            canvas.targetDisplay = 1;
+
+        if (Screen.currentResolution.width != 1366 && Screen.currentResolution.height != 768)
+            Screen.SetResolution(1366, 768, true);
+        Application.targetFrameRate = 144;
+    }
 
     // Start is called before the first frame update
     void Start()
     {
-        Screen.SetResolution(1366, 768, true);
-        Application.targetFrameRate = 144;
-
         rightArrow.SetActive(false);
         leftArrow.SetActive(false);
         taskInit.SetActive(true);

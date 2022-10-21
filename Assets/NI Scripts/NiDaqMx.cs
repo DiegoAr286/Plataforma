@@ -583,9 +583,21 @@ namespace Janelia
             numReadPerChannel = 0;
 
             IntPtr reserved = IntPtr.Zero;
+            _ = DAQmxStartTask(taskHandle);
+
             int status = DAQmxReadDigitalLines(taskHandle, 4, 10.0, DAQmx_Val_GroupByScanNumber, buffer, 32, ref numReadPerChannel, ref numBytesPerSamp, reserved);
+
+            _ = DAQmxStopTask(taskHandle);
+
             return StatusIndicatesSuccess(status);
         }
+
+        public static void ClearInputTask(DigitalInputParams p)
+        {
+            ulong taskHandle = _digitalInputParamsToTaskHandle[p];
+            DAQmxClearTask(taskHandle);
+        }
+
 
         // Get the index for a particular channel's data item in the `buffer` produced by `ReadFromInputs`.
 
