@@ -53,16 +53,18 @@ public class ColorChangeManager : MonoBehaviour
     private int lines = 3; // Líneas digitales a escribir
     private int frameCounterNI = 0;
 
-    private bool continueClick = true; // Click para continuar con la tarea
+    //private bool continueClick = true; // Click para continuar con la tarea
 
     private void Awake()
     {
+        Screen.SetResolution(1366, 768, true);
+        Application.targetFrameRate = 144;
+
+        if (Display.displays.Length == 1)
+            return;
+
         if (Display.displays[1].active)
             canvas.targetDisplay = 1;
-
-        if (Screen.currentResolution.width != 1366 && Screen.currentResolution.height != 768)
-            Screen.SetResolution(1366, 768, true);
-        Application.targetFrameRate = 144;
     }
 
     // Start is called before the first frame update
@@ -119,13 +121,13 @@ public class ColorChangeManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape))
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 5); // Salir del test al menú inicial
 
-        if (Input.GetMouseButtonDown(0))
-            continueClick = true;
+        //if (Input.GetMouseButtonDown(0))
+        //    continueClick = true;
     }
 
     void FixedUpdate()
     {
-        if (task && continueClick)
+        if (task) // && continueClick)
             fixedFrameCounter++;
 
         if (squaresQuantity <= 6)
@@ -225,7 +227,7 @@ public class ColorChangeManager : MonoBehaviour
         score = 0;
         mistakes = 0;
         fixedFrameCounter = 0;
-        continueClick = false;
+        //continueClick = false;
         leftSquareOrder.Clear();
         leftPositionsUsed.Clear();
         rightSquareOrder.Clear();

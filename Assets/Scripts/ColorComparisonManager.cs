@@ -68,11 +68,14 @@ public class ColorComparisonManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Display.displays[1].active)
-            canvas.targetDisplay = 1;
-
         Screen.SetResolution(1366, 768, true);
         Application.targetFrameRate = 144;
+
+        if (Display.displays.Length == 1)
+            return;
+
+        if (Display.displays[1].active)
+            canvas.targetDisplay = 1;
     }
 
     // Start is called before the first frame update

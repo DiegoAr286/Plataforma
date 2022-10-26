@@ -18,7 +18,7 @@ public class MainMenu : MonoBehaviour
     private void Awake()
     {
         Screen.SetResolution(1366, 768, true);
-        if (Display.displays.Length == 0)
+        if (Display.displays.Length == 1)
             return;
 
         if (!Display.displays[1].active)
