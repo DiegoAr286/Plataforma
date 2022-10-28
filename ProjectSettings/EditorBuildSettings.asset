@@ -21,7 +21,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Stop_Signal_Task.unity
     guid: 7a5152e40b059424a9a32d1eacae90a1
   - enabled: 1
-    path: Assets/Scenes/Color_Change_Detection_Task.unity
+    path: Assets/Scenes/Color_Selection_Task.unity
     guid: 4ccd804ffe03d34419ef6b00b85f6590
   - enabled: 1
     path: Assets/Scenes/Color_Comparison_Task.unity

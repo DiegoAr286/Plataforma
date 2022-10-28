@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine;
 using Janelia;
 
-public class ColorChangeManager : MonoBehaviour
+public class ColorSelectionManager : MonoBehaviour
 {
     public GameObject[] LeftSideSquares = { null, null, null };
     public GameObject[] RightSideSquares = { null, null, null };
@@ -138,10 +138,10 @@ public class ColorChangeManager : MonoBehaviour
             if (fixedFrameCounter == 160)
                 TrialFirstSquares();
 
-            if (fixedFrameCounter == 185)
+            if (fixedFrameCounter == 260)
                 TrialHideSquares();
 
-            if (fixedFrameCounter == 315)
+            if (fixedFrameCounter == 390)
                 TrialSecondSquares();
 
             if ((score + mistakes) == squaresQuantity)
