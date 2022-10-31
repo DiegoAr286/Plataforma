@@ -50,7 +50,7 @@ public class ColorSelectionManager : MonoBehaviour
     NiDaqMx.DigitalOutputParams[] digitalOutputParams; // Parámetros NI
     private bool writeState = false;
     private int numWritten = 0;
-    private int lines = 3; // Líneas digitales a escribir
+    private int lines = 7; // Líneas digitales a escribir
     private int frameCounterNI = 0;
 
     //private bool continueClick = true; // Click para continuar con la tarea
@@ -419,14 +419,14 @@ public class ColorSelectionManager : MonoBehaviour
     {
         if (leftSide)
         {
-            if (score == 1)
+            if (score == squaresQuantity)
                 writeState = RunNITrigger(3, lines);
             else
                 writeState = RunNITrigger(2, lines);
         }
         else
         {
-            if (score == 1)
+            if (score == squaresQuantity)
                 writeState = RunNITrigger(5, lines);
             else
                 writeState = RunNITrigger(4, lines);
@@ -462,16 +462,16 @@ public class ColorSelectionManager : MonoBehaviour
                 message = new uint[] { 0, 0, 0, 1, 1, 1, 1, 1 };
                 break;
             case 2:
-                message = new uint[] { 1, 0, 0, 1, 1, 1, 1, 1 }; // Trial izquierdo e incorrecto
+                message = new uint[] { 1, 0, 1, 1, 1, 1, 1, 1 }; // Trial izquierdo e incorrecto
                 break;
             case 3:
                 message = new uint[] { 1, 1, 0, 1, 1, 1, 1, 1 }; // Trial izquierdo y correcto
                 break;
             case 4:
-                message = new uint[] { 0, 0, 1, 0, 1, 1, 1, 1 }; // Trial derecho e incorrecto
+                message = new uint[] { 1, 1, 1, 0, 1, 1, 1, 1 }; // Trial derecho e incorrecto
                 break;
             case 5:
-                message = new uint[] { 0, 1, 0, 1, 0, 1, 1, 1 }; // Trial derecho y correcto
+                message = new uint[] { 1, 1, 1, 1, 0, 1, 1, 1 }; // Trial derecho y correcto
                 break;
             case 6:
                 message = new uint[] { 1, 1, 1, 1, 1, 0, 1, 1 };
