@@ -119,7 +119,12 @@ public class ColorSelectionManager : MonoBehaviour
             center.SetActive(true);
         }
         if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            for (int i = 0; i < 8; i++)
+                NiDaqMx.ClearOutputTask(digitalOutputParams[i]);
+
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 5); // Salir del test al menú inicial
+        }
 
         //if (Input.GetMouseButtonDown(0))
         //    continueClick = true;

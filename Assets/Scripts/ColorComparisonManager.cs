@@ -131,7 +131,14 @@ public class ColorComparisonManager : MonoBehaviour
             center.SetActive(true);
         }
         if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            for (int i = 0; i < 8; i++)
+                NiDaqMx.ClearOutputTask(digitalOutputParams[i]);
+
+            NiDaqMx.ClearInputTask(digitalInputParams);
+
             SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex - 6); // Salir del test al menú inicial
+        }
 
         
         // Entrada digital es 257 en alto, 1 para click izquierdo y 256 para click derecho
