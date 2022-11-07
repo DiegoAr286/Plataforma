@@ -16,7 +16,7 @@ public class ColorSelectionManager : MonoBehaviour
     public GameObject finishSign; // Cartel de finalización
     public GameObject center;
 
-    public FileManagerColorChangeDetection FileManager;
+    public FileManagerColorSelection FileManager;
 
     public Canvas canvas;
 

@@ -5,7 +5,7 @@ using System.Globalization;
 using System.IO;
 using UnityEngine;
 
-public class FileManagerColorChangeDetection : MonoBehaviour
+public class FileManagerColorSelection : MonoBehaviour
 {
     private List<int> trialNumber;
     private List<int> squareQuantity;
@@ -13,7 +13,7 @@ public class FileManagerColorChangeDetection : MonoBehaviour
     private List<int> matches;
     private List<int> mistakes;
 
-    public string fileName = "ColorChangeDetection_File";
+    public string fileName = "ColorSelection_File";
     private string path;
 
     // Start is called before the first frame update
@@ -41,7 +41,7 @@ public class FileManagerColorChangeDetection : MonoBehaviour
 
     public void WriteData()
     {
-        path = "Assets/Resources/Files/ColorChangeDetection_Files/" + fileName + ".txt";
+        path = "Assets/Resources/Files/ColorSelection_Files/" + fileName + ".txt";
         if (!File.Exists(path))
         {
             Debug.Log(path);
@@ -52,7 +52,7 @@ public class FileManagerColorChangeDetection : MonoBehaviour
             int i = 1;
             while (File.Exists(path))
             {
-                path = "Assets/Resources/Files/ColorChangeDetection_Files/" + fileName + "_" + i.ToString() + ".txt";
+                path = "Assets/Resources/Files/ColorSelection_Files/" + fileName + "_" + i.ToString() + ".txt";
                 i++;
             }
             File.WriteAllText(path, "TrialNumber,SquareQuantity,Side-L1,Matches,Mistakes\n");
