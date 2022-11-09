@@ -78,13 +78,11 @@ public class CueManager : MonoBehaviour
     private bool cameraRecording = false;
 
     // NI link
-    NiDaqMx.DigitalOutputParams[] digitalOutputParams; // Parámetros NI
-    private bool writeState = false;
+    NiDaqMx.DigitalOutputParams digitalOutputParams;
     private int numWritten = 0;
-    private int lines = 7; // Líneas digitales a escribir
+    private bool writeState = false;
     private int frameCounterNI = 0;
-
-    //private bool toggleDig = true;
+    private bool toggleDig = true;
 
     private bool isAnalogAcquisition = true; // Opción adquisición
 
@@ -143,14 +141,16 @@ public class CueManager : MonoBehaviour
 
         if (isAnalogAcquisition)
         {
-            // Inicializa variables NI
-            digitalOutputParams = new NiDaqMx.DigitalOutputParams[8];
-            for (int i = 0; i < 8; i++)
+            digitalOutputParams = new NiDaqMx.DigitalOutputParams();
+            bool n = NiDaqMx.CreateDigitalOutput(digitalOutputParams); // Inicialización de variables de conexión con placa de adquisición
+            if (n)
             {
-                digitalOutputParams[i] = new NiDaqMx.DigitalOutputParams();
-                _ = NiDaqMx.CreateDigitalOutput(digitalOutputParams[i], false, i);
+                Debug.Log("NI Conectado");
+                // Inicializa salidas digitales en alto
+                n = RunNITrigger(0);
             }
-            writeState = RunNITrigger(0, lines);
+            else
+                Debug.Log("NI Falló");
         }
 
         MirrorScene();
@@ -160,11 +160,7 @@ public class CueManager : MonoBehaviour
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            for (int i = 0; i < 8; i++)
-                NiDaqMx.ClearOutputTask(digitalOutputParams[i]);
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1); // Salir del test al menú inicial
-        }
 
         // Da el ancho de pulso
         if (writeState)
@@ -173,35 +169,35 @@ public class CueManager : MonoBehaviour
 
             if (writeState && frameCounterNI == 7)
             {
-                writeState = RunNITrigger(0, lines);
+                writeState = RunNITrigger(0);
                 frameCounterNI = 0;
             }
         }
+        
+        // Al presionar espacio regresa los pegs a su posición inicial
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            //ResetPegs();
+            if (toggleDig)
+            {
+                //writeState = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 0, 0, 0, 0, 0, 0, 0, 0 }, ref numWritten);
+                writeState = RunNITrigger(2);
 
-        //// Al presionar espacio regresa los pegs a su posición inicial
-        //if (Input.GetKeyDown(KeyCode.Space))
-        //{
-        //    //ResetPegs();
-        //    if (toggleDig)
-        //    {
-        //        //writeState = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 0, 0, 0, 0, 0, 0, 0, 0 }, ref numWritten);
-        //        writeState = RunNITrigger(2);
+                toggleDig = false;
+                Debug.Log(writeState);
+            }
+            else
+            {
+                //writeState = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 1, 1, 1, 1, 1, 1, 1, 1 }, ref numWritten);
+                writeState = RunNITrigger(1);
 
-        //        toggleDig = false;
-        //        Debug.Log(writeState);
-        //    }
-        //    else
-        //    {
-        //        //writeState = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 1, 1, 1, 1, 1, 1, 1, 1 }, ref numWritten);
-        //        writeState = RunNITrigger(1);
+                toggleDig = true;
+                Debug.Log(writeState);
+            }
+            //writeState = RunNITrigger(1);
 
-        //        toggleDig = true;
-        //        Debug.Log(writeState);
-        //    }
-        //    //writeState = RunNITrigger(1);
-
-        //    return;
-        //}
+            return;
+        }
 
         if (Input.GetKeyDown(KeyCode.S))
             MirrorScene();
@@ -267,7 +263,7 @@ public class CueManager : MonoBehaviour
 
         pegActivated = true;
         // Trigger 1
-        writeState = RunNITrigger(1, lines);
+        writeState = RunNITrigger(1);
     }
 
     void GreenlightPeg()
@@ -284,7 +280,7 @@ public class CueManager : MonoBehaviour
         HoleBases[holeNumber - 1].SetActive(false); // Desactiva el peg fantasma
 
 
-        writeState = RunNITrigger(2, lines);
+        writeState = RunNITrigger(2);
 
         if (pegEntered)
             fileManager.StoreTrialOutcome(1);
@@ -403,48 +399,26 @@ public class CueManager : MonoBehaviour
     }
 
 
-    public bool RunNITrigger(int trigger, int lines)
+    public bool RunNITrigger(int trigger)
     {
         bool status = false;
-        uint[] message = { 1 };
-        switch (trigger)
+
+        if (isAnalogAcquisition)
         {
-            case 0:
-                message = new uint[] { 1, 1, 1, 1, 1, 1, 1, 1 };
-                status = false;
-                break;
-            case 1:
-                message = new uint[] { 0, 0, 0, 1, 1, 1, 1, 1 };
-                break;
-            case 2:
-                message = new uint[] { 1, 0, 1, 1, 1, 1, 1, 1 }; // Trial izquierdo e incorrecto
-                break;
-            case 3:
-                message = new uint[] { 1, 1, 0, 1, 1, 1, 1, 1 }; // Trial izquierdo y correcto
-                break;
-            case 4:
-                message = new uint[] { 1, 1, 1, 0, 1, 1, 1, 1 }; // Trial derecho e incorrecto
-                break;
-            case 5:
-                message = new uint[] { 1, 1, 1, 1, 0, 1, 1, 1 }; // Trial derecho y correcto
-                break;
-            case 6:
-                message = new uint[] { 1, 1, 1, 1, 1, 0, 1, 1 };
-                break;
-            case 7:
-                message = new uint[] { 1, 1, 1, 1, 1, 1, 0, 1 };
-                break;
-            case 8:
-                message = new uint[] { 1, 1, 1, 1, 1, 1, 1, 0 };
-                break;
-            case 9:
-                message = new uint[] { 0, 0, 0, 0, 0, 0, 0, 0 };
-                break;
+            switch (trigger)
+            {
+                case 0:
+                    _ = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 1, 1, 1, 1, 1, 1, 1, 1 }, ref numWritten);
+                    status = false;
+                    break;
+                case 1:
+                    status = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 0, 1, 1, 1, 1, 1, 1, 1 }, ref numWritten);
+                    break;
+                case 2:
+                    status = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 1, 0, 1, 1, 1, 1, 1, 1 }, ref numWritten);
+                    break;
+            }
         }
-
-        for (int i = 0; i < lines; i++)
-            status = NiDaqMx.WriteDigitalValue(digitalOutputParams[i], new uint[] { message[i] }, ref numWritten);
-
         fileManager.StoreTrigger(trigger);
 
         return status;
