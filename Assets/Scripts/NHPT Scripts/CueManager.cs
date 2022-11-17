@@ -161,8 +161,11 @@ public class CueManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            for (int i = 0; i < 8; i++)
-                NiDaqMx.ClearOutputTask(digitalOutputParams[i]);
+            if (isAnalogAcquisition)
+            {
+                for (int i = 0; i < 8; i++)
+                    NiDaqMx.ClearOutputTask(digitalOutputParams[i]);
+            }
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1); // Salir del test al menú inicial
         }
 
@@ -266,8 +269,11 @@ public class CueManager : MonoBehaviour
         HoleBases[holeNumber - 1].SetActive(true); // Activa el peg fantasma de un agujero
 
         pegActivated = true;
-        // Trigger 1
-        writeState = RunNITrigger(1, lines);
+        if (isAnalogAcquisition)
+        {
+            // Trigger 1
+            writeState = RunNITrigger(1, lines);
+        }
     }
 
     void GreenlightPeg()
@@ -283,8 +289,10 @@ public class CueManager : MonoBehaviour
         Pegs[pegNumber - 1].transform.GetChild(0).gameObject.GetComponent<MeshRenderer>().material = originalMaterial; // Regresa el peg a su color normal
         HoleBases[holeNumber - 1].SetActive(false); // Desactiva el peg fantasma
 
-
-        writeState = RunNITrigger(2, lines);
+        if (isAnalogAcquisition)
+        {
+            writeState = RunNITrigger(2, lines);
+        }
 
         if (pegEntered)
             fileManager.StoreTrialOutcome(1);

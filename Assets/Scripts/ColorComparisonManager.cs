@@ -174,10 +174,10 @@ public class ColorComparisonManager : MonoBehaviour
             if (fixedFrameCounter == 160)
                 TrialFirstSquares();
 
-            if (fixedFrameCounter == 260)
+            if (fixedFrameCounter == 185)
                 TrialHideSquares();
 
-            if (fixedFrameCounter == 390)
+            if (fixedFrameCounter == 315)
                 TrialSecondSquares();
 
             if (comparisonMade && comparisonWindow)
