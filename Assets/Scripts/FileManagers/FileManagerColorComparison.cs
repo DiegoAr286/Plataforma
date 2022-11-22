@@ -14,13 +14,12 @@ public class FileManagerColorComparison : MonoBehaviour
     private List<int> scores; // 1 -> correcto; 0 -> incorrecto
 
 
-    public string fileName = "ColorComparison_File";
     private string path;
 
     // Start is called before the first frame update
     void Start()
     {
-        fileName = PlayerPrefs.GetString("Name") + "_" + fileName;
+        path = PlayerPrefs.GetString("Name");
 
         trialNumber = new List<int>();
         squareQuantity = new List<int>();
@@ -41,24 +40,8 @@ public class FileManagerColorComparison : MonoBehaviour
 
     public void WriteData()
     {
-        path = "Assets/Resources/Files/ColorComparison_Files/" + fileName + ".txt";
-        if (!File.Exists(path))
-        {
-            Debug.Log(path);
-            File.WriteAllText(path, "TrialNumber,SquareQuantity,Side-L1,Matches,Score\n");
-        }
-        else
-        {
-            int i = 1;
-            while (File.Exists(path))
-            {
-                path = "Assets/Resources/Files/ColorComparison_Files/" + fileName + "_" + i.ToString() + ".txt";
-                i++;
-            }
-            File.WriteAllText(path, "TrialNumber,SquareQuantity,Side-L1,Matches,Score\n");
-        }
-
-
+        File.WriteAllText(path, "TrialNumber,SquareQuantity,Side-L1,Matches,Score\n");
+        
         CultureInfo cult = CultureInfo.InvariantCulture;
         for (int i = 0; i < trialNumber.Count; i++)
         {

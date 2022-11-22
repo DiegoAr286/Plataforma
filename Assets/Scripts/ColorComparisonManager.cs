@@ -137,7 +137,7 @@ public class ColorComparisonManager : MonoBehaviour
 
             NiDaqMx.ClearInputTask(digitalInputParams);
 
-            SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex - 6); // Salir del test al menú inicial
+            SceneManager.LoadSceneAsync(0); // Salir del test al menú inicial
         }
 
         

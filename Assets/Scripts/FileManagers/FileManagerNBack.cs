@@ -18,13 +18,12 @@ public class FileManagerNBack : MonoBehaviour
     private List<int> nBack1;
     private List<int> nBack2;
 
-    public string fileName = "NBack_File";
     private string path;
 
     // Start is called before the first frame update
     void Start()
     {
-        fileName = PlayerPrefs.GetString("Name") + "_" + fileName;
+        path = PlayerPrefs.GetString("Name");
 
         trialNumber = new List<int>();
         trialType = new List<int>();
@@ -55,24 +54,8 @@ public class FileManagerNBack : MonoBehaviour
 
     public void WriteData()
     {
-        path = "Assets/Resources/Files/NBack_Files/" + fileName + ".txt";
-        if (!File.Exists(path))
-        {
-            Debug.Log(path);
-            File.WriteAllText(path, "TrialNumber,TrialType,Score,Match,Miss,FalseAlarm,ReactionTime,CurrentLetter,NBack1,NBack2\n");
-        }
-        else
-        {
-            int i = 1;
-            while (File.Exists(path))
-            {
-                path = "Assets/Resources/Files/NBack_Files/" + fileName + "_" + i.ToString() + ".txt";
-                i++;
-            }
-            File.WriteAllText(path, "TrialNumber,TrialType,Score,Match,Miss,FalseAlarm,ReactionTime,CurrentLetter,NBack1,NBack2\n");
-        }
-
-
+        File.WriteAllText(path, "TrialNumber,TrialType,Score,Match,Miss,FalseAlarm,ReactionTime,CurrentLetter,NBack1,NBack2\n");
+        
         CultureInfo cult = CultureInfo.InvariantCulture;
         for (int i = 0; i < trialNumber.Count; i++)
         {

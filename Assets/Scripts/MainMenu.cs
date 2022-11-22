@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
 using UnityEngine.UI;
+using SimpleFileBrowser;
 
 public class MainMenu : MonoBehaviour
 {
@@ -44,12 +45,16 @@ public class MainMenu : MonoBehaviour
         //Apago todos los objetos para que no se muestre el menú de Config al iniciar
         ConfigMenuP1_Obj.SetActive(false);
         ConfigMenuP2_Obj.SetActive(false);
-
-        FilenameMenu.SetActive(false);
     }
 
 
     public void PlayParadigm()
+    {
+        if (paradigmID != 0)
+            StartCoroutine(ShowSaveDialogCoroutine());
+    }
+
+    private void StartParadigm()
     {
         if (paradigmID == 0)
             Debug.Log("paradigmID= " + paradigmID + ". Cargue un Paradigma");
@@ -81,7 +86,6 @@ public class MainMenu : MonoBehaviour
                 paradigmID = 0;
                 ConfigMenuP1_Obj.SetActive(false);
                 ConfigMenuP2_Obj.SetActive(false);
-                FilenameMenu.SetActive(false);
                 break;
 
             case 1: // 1: 9-Hole Peg Test (cue based)
@@ -120,9 +124,17 @@ public class MainMenu : MonoBehaviour
                 ConfigMenuP2_Obj.SetActive(false);
                 break;
         }
-
-        if (ParadigmIndex != 0)
-            FilenameMenu.SetActive(true);
     }
 
+    IEnumerator ShowSaveDialogCoroutine()
+    {
+        FileBrowser.SetFilters(true, new FileBrowser.Filter("Text Files", ".txt"));
+
+        yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.FilesAndFolders, false, null, "Archivo.txt", "Crear archivo", "Crear");
+
+        if (FileBrowser.Success)
+            PlayerPrefs.SetString("Name", FileBrowser.Result[0]);
+        
+        StartParadigm();
+    }
 }
