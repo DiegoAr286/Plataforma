@@ -324,12 +324,6 @@ public class ColorSelectionManager : MonoBehaviour
             RightSideSquares[rightSquareOrder[i]].SetActive(true);
             RightSideSquares[rightSquareOrder[i]].transform.GetChild(0).gameObject.SetActive(false);
             RightSideSquares[rightSquareOrder[i]].transform.SetPositionAndRotation(rightPositions[rightPositionsUsed[i]], zeroRotation);
-
-
-            if (leftSide)
-                EnableButtons(LeftSideSquares[leftSquareOrder[i]].transform.GetChild(0).GetComponentsInChildren<Button>(), true);
-            else
-                EnableButtons(RightSideSquares[rightSquareOrder[i]].transform.GetChild(0).GetComponentsInChildren<Button>(), true);
         }
     }
 
@@ -354,6 +348,18 @@ public class ColorSelectionManager : MonoBehaviour
             // Lado derecho
             RightSideSquares[rightSquareOrder[i]].SetActive(true);
             RightSideSquares[rightSquareOrder[i]].transform.GetChild(0).gameObject.SetActive(true);
+
+
+            if (leftSide)
+            {
+                EnableButtons(LeftSideSquares[leftSquareOrder[i]].transform.GetChild(0).GetComponentsInChildren<Button>(), true);
+                EnableButtonsImages(LeftSideSquares[leftSquareOrder[i]].transform.GetChild(0).GetComponentsInChildren<Image>(), false);
+            }
+            else
+            {
+                EnableButtons(RightSideSquares[rightSquareOrder[i]].transform.GetChild(0).GetComponentsInChildren<Button>(), true);
+                EnableButtonsImages(RightSideSquares[rightSquareOrder[i]].transform.GetChild(0).GetComponentsInChildren<Image>(), false);
+            }
         }
     }
 
@@ -362,8 +368,11 @@ public class ColorSelectionManager : MonoBehaviour
         string squareName = EventSystem.current.currentSelectedGameObject.transform.parent.transform.parent.name;
         string buttonName = EventSystem.current.currentSelectedGameObject.name;
         Button[] buttons = EventSystem.current.currentSelectedGameObject.transform.parent.GetComponentsInChildren<Button>();
+        Image[] images = EventSystem.current.currentSelectedGameObject.transform.parent.GetComponentsInChildren<Image>();
 
         EnableButtons(buttons, false);
+        EnableButtonsImages(images, true);
+
         switch (buttonName)
         {
             case "BlackButton":
@@ -430,6 +439,29 @@ public class ColorSelectionManager : MonoBehaviour
     {
         for (int i = 0; i < buttons.Length; i++)
             buttons[i].enabled = enable;
+    }
+
+    void EnableButtonsImages(Image[] images, bool enable)
+    {
+
+        if (enable)
+        {
+            images[0].color = Color.black;
+            images[1].color = new Color32(255, 0, 0, 255);
+            images[2].color = new Color32(0, 255, 0, 255);
+            images[3].color = new Color32(0, 0, 255, 255);
+            images[4].color = new Color32(255, 255, 0, 255);
+            images[5].color = new Color32(0, 255, 255, 255);
+            images[6].color = new Color32(255, 0, 255, 255);
+            images[7].color = Color.white;
+            images[8].color = new Color32(255, 128, 0, 255);
+
+        }
+        else
+        {
+            for (int i = 0; i < images.Length; i++)
+                images[i].color = Color.white;
+        }
     }
 
     private void TrialResetTrigger()
