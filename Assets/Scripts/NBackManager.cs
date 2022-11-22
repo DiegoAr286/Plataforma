@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Janelia;
 using UnityEngine.SceneManagement;
+using static Janelia.NiDaqMx;
 
 
 public class NBackManager : MonoBehaviour
@@ -268,7 +269,7 @@ public class NBackManager : MonoBehaviour
                         if (letterCounter > 2) // Guarda datos a partir de la 3ra letra
                         {
                             FileManager.StoreDataInBuffer(letterCounter, matchingTrial ? 1 : 0, matchTrial ? 1 : 0, matchTrial ? 1 : 0, missTrial ? 1 : 0,
-                                falseAlarm ? 1 : 0, reactionTime, taskOrder[letterCounter-1], taskOrder[letterCounter-2], taskOrder[letterCounter-3]);
+                                falseAlarm ? 1 : 0, reactionTime, taskOrder[letterCounter - 1], taskOrder[letterCounter - 2], taskOrder[letterCounter - 3]);
                         }
 
                         if (letterCounter == taskCoincidences[coincidenceCounter] + nBack)
@@ -280,7 +281,7 @@ public class NBackManager : MonoBehaviour
                         }
                         else
                         {
-                            
+
                             validTime = false;
                             matchingTrial = false;
                         }
@@ -311,8 +312,22 @@ public class NBackManager : MonoBehaviour
                 FileManager.WriteData();
                 taskFinished = true;
                 task = false;
+
+                StartCoroutine(TaskExit());
             }
         }
+    }
+
+    IEnumerator TaskExit()
+    {
+        //yield on a new YieldInstruction that waits for 3 seconds.
+        yield return new WaitForSeconds(3);
+
+        for (int i = 0; i < 8; i++)
+            NiDaqMx.ClearOutputTask(digitalOutputParams[i]);
+        NiDaqMx.ClearInputTask(digitalInputParams);
+
+        SceneManager.LoadScene(0); // Salir del test al menú inicial
     }
 
     private void LetterOrder(int nBack)
@@ -403,7 +418,7 @@ public class NBackManager : MonoBehaviour
                 }
             }
         }
-        
+
         for (int i = 0; i < taskOrder.Length - nBack; i++)
         {
             if (taskOrder[i] == taskOrder[i + nBack])
@@ -421,28 +436,6 @@ public class NBackManager : MonoBehaviour
                 }
             }
         }
-
-        //for (int i = 0; i < warmUpOrder.Length; i++)
-        //{
-        //    Debug.Log(warmUpOrder[i]);
-        //}
-        //Debug.Log("fffff");
-        //for (int i = 0; i < warmUpCoincidences.Length; i++)
-        //{
-        //    Debug.Log(warmUpCoincidences[i]);
-        //}
-        //Debug.Log("gggggg");
-
-        //for (int i = 0; i < taskOrder.Length; i++)
-        //{
-        //    Debug.Log(taskOrder[i]);
-        //}
-        //Debug.Log("hhhhhhh");
-        //for (int i = 0; i < taskCoincidences.Length; i++)
-        //{
-        //    Debug.Log(taskCoincidences[i]);
-        //}
-
     }
 
     private void TriggerPulseWidth()

@@ -247,6 +247,19 @@ public class ColorSelectionManager : MonoBehaviour
         rightArrow.SetActive(false);
         leftArrow.SetActive(false);
         FileManager.WriteData();
+
+        StartCoroutine(TaskExit());
+    }
+
+    IEnumerator TaskExit()
+    {
+        //yield on a new YieldInstruction that waits for 3 seconds.
+        yield return new WaitForSeconds(3);
+
+        for (int i = 0; i < 8; i++)
+            NiDaqMx.ClearOutputTask(digitalOutputParams[i]);
+
+        SceneManager.LoadScene(0); // Salir del test al menú inicial
     }
 
     private void GenerateSquareOrder()
@@ -343,7 +356,6 @@ public class ColorSelectionManager : MonoBehaviour
             RightSideSquares[rightSquareOrder[i]].transform.GetChild(0).gameObject.SetActive(true);
         }
     }
-
 
     public void CheckColor()
     {
@@ -452,7 +464,6 @@ public class ColorSelectionManager : MonoBehaviour
         }
     }
     
-
     public bool RunNITrigger(int trigger, int lines)
     {
         bool status = false;

@@ -288,6 +288,20 @@ public class ColorComparisonManager : MonoBehaviour
         rightArrow.SetActive(false);
         leftArrow.SetActive(false);
         FileManager.WriteData();
+
+        StartCoroutine(TaskExit());
+    }
+
+    IEnumerator TaskExit()
+    {
+        //yield on a new YieldInstruction that waits for 3 seconds.
+        yield return new WaitForSeconds(3);
+
+        for (int i = 0; i < 8; i++)
+            NiDaqMx.ClearOutputTask(digitalOutputParams[i]);
+        NiDaqMx.ClearInputTask(digitalInputParams);
+
+        SceneManager.LoadScene(0); // Salir del test al menú inicial
     }
 
     private void GenerateSquareOrder(int squaresAmount = 0, bool listsCleared = true)
