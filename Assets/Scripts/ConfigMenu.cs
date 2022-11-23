@@ -8,8 +8,6 @@ using System.Linq;
 
 public class ConfigMenu : MonoBehaviour
 {
-    //public GameObject mainMenuObj;
-
     void Start()
     {
         PlayerPrefs.SetInt("CameraRec", 1);

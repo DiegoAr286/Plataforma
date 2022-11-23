@@ -47,6 +47,9 @@ public class ColorSelectionManager : MonoBehaviour
 
     private int fixedFrameCounter = 0;
 
+    // Entrenamiento
+    private bool training = false;
+
     NiDaqMx.DigitalOutputParams[] digitalOutputParams; // Parámetros NI
     private bool writeState = false;
     private int numWritten = 0;
@@ -95,6 +98,11 @@ public class ColorSelectionManager : MonoBehaviour
         leftPositionsUsed = new List<int>();
         rightSquareOrder = new List<int>();
         rightPositionsUsed = new List<int>();
+
+        training = PlayerPrefs.GetInt("Training", 0) == 1; // if true
+
+        if (training)
+            totalRepetitions = 2;
 
         // Inicializa variables NI
         digitalOutputParams = new NiDaqMx.DigitalOutputParams[8];
@@ -218,7 +226,8 @@ public class ColorSelectionManager : MonoBehaviour
         TrialResetTrigger();
 
         // Guardar datos
-        FileManager.StoreDataInBuffer(taskNumber, squaresQuantity, leftSide ? 1 : 0, score, mistakes);
+        if (!training)
+            FileManager.StoreDataInBuffer(taskNumber, squaresQuantity, leftSide ? 1 : 0, score, mistakes);
 
         for (int i = 0; i < squaresQuantity; i++)
         {
@@ -246,7 +255,8 @@ public class ColorSelectionManager : MonoBehaviour
         center.SetActive(false);
         rightArrow.SetActive(false);
         leftArrow.SetActive(false);
-        FileManager.WriteData();
+        if (!training)
+            FileManager.WriteData();
 
         StartCoroutine(TaskExit());
     }
