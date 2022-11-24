@@ -4,6 +4,10 @@ using System;
 using System.Globalization;
 using System.IO;
 using UnityEngine;
+using UnityEditor;
+using SimpleFileBrowser;
+using System.Drawing;
+using System.Text.RegularExpressions;
 
 public class FileManagerColorSelection : MonoBehaviour
 {
@@ -13,13 +17,13 @@ public class FileManagerColorSelection : MonoBehaviour
     private List<int> matches;
     private List<int> mistakes;
 
-    public string fileName = "ColorSelection_File";
+    //public string fileName = "ColorSelection_File";
     private string path;
 
     // Start is called before the first frame update
     void Start()
     {
-        fileName = PlayerPrefs.GetString("Name") + "_" + fileName;
+        path = PlayerPrefs.GetString("Name");
 
         trialNumber = new List<int>();
         squareQuantity = new List<int>();
@@ -28,7 +32,6 @@ public class FileManagerColorSelection : MonoBehaviour
         mistakes = new List<int>();
         
     }
-
 
     public void StoreDataInBuffer(int trialN, int squareQ, int sides, int match, int mistake)
     {
@@ -41,24 +44,8 @@ public class FileManagerColorSelection : MonoBehaviour
 
     public void WriteData()
     {
-        path = "Assets/Resources/Files/ColorSelection_Files/" + fileName + ".txt";
-        if (!File.Exists(path))
-        {
-            Debug.Log(path);
-            File.WriteAllText(path, "TrialNumber,SquareQuantity,Side-L1,Matches,Mistakes\n");
-        }
-        else
-        {
-            int i = 1;
-            while (File.Exists(path))
-            {
-                path = "Assets/Resources/Files/ColorSelection_Files/" + fileName + "_" + i.ToString() + ".txt";
-                i++;
-            }
-            File.WriteAllText(path, "TrialNumber,SquareQuantity,Side-L1,Matches,Mistakes\n");
-        }
-
-
+        File.WriteAllText(path, "TrialNumber,SquareQuantity,Side-L1,Matches,Mistakes\n");
+        
         CultureInfo cult = CultureInfo.InvariantCulture;
         for (int i = 0; i < trialNumber.Count; i++)
         {
@@ -67,4 +54,3 @@ public class FileManagerColorSelection : MonoBehaviour
         }
     }
 }
-

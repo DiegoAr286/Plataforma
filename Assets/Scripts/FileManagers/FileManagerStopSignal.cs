@@ -16,13 +16,12 @@ public class FileManagerStopSignal : MonoBehaviour
     private List<int> wrongKey;
     private List<double> reactionTime;
 
-    public string fileName = "StopSignal_File";
     private string path;
 
     // Start is called before the first frame update
     void Start()
     {
-        fileName = PlayerPrefs.GetString("Name") + "_" + fileName;
+        path = PlayerPrefs.GetString("Name");
 
         trialNumber = new List<int>();
         trialType = new List<int>();
@@ -49,24 +48,8 @@ public class FileManagerStopSignal : MonoBehaviour
 
     public void WriteData()
     {
-        path = "Assets/Resources/Files/StopSignal_Files/" + fileName + ".txt";
-        if (!File.Exists(path))
-        {
-            Debug.Log(path);
-            File.WriteAllText(path, "TrialNumber,TrialType,RequiredResponse,StopSignalTime,Match,Miss,WrongArrow,ReactionTime\n");
-        }
-        else
-        {
-            int i = 1;
-            while (File.Exists(path))
-            {
-                path = "Assets/Resources/Files/StopSignal_Files/" + fileName + "_" + i.ToString() + ".txt";
-                i++;
-            }
-            File.WriteAllText(path, "TrialNumber,TrialType,RequiredResponse,StopSignalTime,Match,Miss,WrongArrow,ReactionTime\n");
-        }
-
-
+        File.WriteAllText(path, "TrialNumber,TrialType,RequiredResponse,StopSignalTime,Match,Miss,WrongArrow,ReactionTime\n");
+        
         CultureInfo cult = CultureInfo.InvariantCulture;
         for (int i = 0; i < trialNumber.Count; i++)
         {

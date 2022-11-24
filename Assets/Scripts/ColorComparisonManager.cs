@@ -53,6 +53,9 @@ public class ColorComparisonManager : MonoBehaviour
 
     private int fixedFrameCounter = 0;
 
+    // Entrenamiento
+    private bool training = false;
+
     // Salida digital
     NiDaqMx.DigitalOutputParams[] digitalOutputParams; // Parámetros NI
     private bool writeState = false;
@@ -104,6 +107,11 @@ public class ColorComparisonManager : MonoBehaviour
         rightSquareOrder = new List<int>();
         rightPositionsUsed = new List<int>();
 
+        training = PlayerPrefs.GetInt("Training", 0) == 1; // if true
+
+        if (training)
+            totalRepetitions = 2;
+
         // Inicializa variables NI
         digitalOutputParams = new NiDaqMx.DigitalOutputParams[8];
         for (int i = 0; i < 8; i++)
@@ -137,7 +145,7 @@ public class ColorComparisonManager : MonoBehaviour
 
             NiDaqMx.ClearInputTask(digitalInputParams);
 
-            SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex - 6); // Salir del test al menú inicial
+            SceneManager.LoadSceneAsync(0); // Salir del test al menú inicial
         }
 
         
@@ -174,10 +182,10 @@ public class ColorComparisonManager : MonoBehaviour
             if (fixedFrameCounter == 160)
                 TrialFirstSquares();
 
-            if (fixedFrameCounter == 260)
+            if (fixedFrameCounter == 185)
                 TrialHideSquares();
 
-            if (fixedFrameCounter == 390)
+            if (fixedFrameCounter == 315)
                 TrialSecondSquares();
 
             if (comparisonMade && comparisonWindow)
@@ -269,7 +277,8 @@ public class ColorComparisonManager : MonoBehaviour
         TrialResetTrigger();
 
         // Guardar datos
-        FileManager.StoreDataInBuffer(taskNumber, squaresQuantity, leftSide ? 1 : 0, randomTrial ? 1 : 0, score);
+        if (!training)
+            FileManager.StoreDataInBuffer(taskNumber, squaresQuantity, leftSide ? 1 : 0, randomTrial ? 1 : 0, score);
 
         score = 0;
         fixedFrameCounter = 0;
@@ -287,7 +296,23 @@ public class ColorComparisonManager : MonoBehaviour
         center.SetActive(false);
         rightArrow.SetActive(false);
         leftArrow.SetActive(false);
-        FileManager.WriteData();
+
+        if (!training)
+            FileManager.WriteData();
+
+        StartCoroutine(TaskExit());
+    }
+
+    IEnumerator TaskExit()
+    {
+        //yield on a new YieldInstruction that waits for 3 seconds.
+        yield return new WaitForSeconds(3);
+
+        for (int i = 0; i < 8; i++)
+            NiDaqMx.ClearOutputTask(digitalOutputParams[i]);
+        NiDaqMx.ClearInputTask(digitalInputParams);
+
+        SceneManager.LoadScene(0); // Salir del test al menú inicial
     }
 
     private void GenerateSquareOrder(int squaresAmount = 0, bool listsCleared = true)

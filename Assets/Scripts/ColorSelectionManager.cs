@@ -47,6 +47,9 @@ public class ColorSelectionManager : MonoBehaviour
 
     private int fixedFrameCounter = 0;
 
+    // Entrenamiento
+    private bool training = false;
+
     NiDaqMx.DigitalOutputParams[] digitalOutputParams; // Parámetros NI
     private bool writeState = false;
     private int numWritten = 0;
@@ -96,6 +99,11 @@ public class ColorSelectionManager : MonoBehaviour
         rightSquareOrder = new List<int>();
         rightPositionsUsed = new List<int>();
 
+        training = PlayerPrefs.GetInt("Training", 0) == 1; // if true
+
+        if (training)
+            totalRepetitions = 2;
+
         // Inicializa variables NI
         digitalOutputParams = new NiDaqMx.DigitalOutputParams[8];
         for (int i = 0; i < 8; i++)
@@ -143,10 +151,10 @@ public class ColorSelectionManager : MonoBehaviour
             if (fixedFrameCounter == 160)
                 TrialFirstSquares();
 
-            if (fixedFrameCounter == 260)
+            if (fixedFrameCounter == 185)
                 TrialHideSquares();
 
-            if (fixedFrameCounter == 390)
+            if (fixedFrameCounter == 315)
                 TrialSecondSquares();
 
             if ((score + mistakes) == squaresQuantity)
@@ -218,7 +226,8 @@ public class ColorSelectionManager : MonoBehaviour
         TrialResetTrigger();
 
         // Guardar datos
-        FileManager.StoreDataInBuffer(taskNumber, squaresQuantity, leftSide ? 1 : 0, score, mistakes);
+        if (!training)
+            FileManager.StoreDataInBuffer(taskNumber, squaresQuantity, leftSide ? 1 : 0, score, mistakes);
 
         for (int i = 0; i < squaresQuantity; i++)
         {
@@ -246,7 +255,21 @@ public class ColorSelectionManager : MonoBehaviour
         center.SetActive(false);
         rightArrow.SetActive(false);
         leftArrow.SetActive(false);
-        FileManager.WriteData();
+        if (!training)
+            FileManager.WriteData();
+
+        StartCoroutine(TaskExit());
+    }
+
+    IEnumerator TaskExit()
+    {
+        //yield on a new YieldInstruction that waits for 3 seconds.
+        yield return new WaitForSeconds(3);
+
+        for (int i = 0; i < 8; i++)
+            NiDaqMx.ClearOutputTask(digitalOutputParams[i]);
+
+        SceneManager.LoadScene(0); // Salir del test al menú inicial
     }
 
     private void GenerateSquareOrder()
@@ -311,12 +334,6 @@ public class ColorSelectionManager : MonoBehaviour
             RightSideSquares[rightSquareOrder[i]].SetActive(true);
             RightSideSquares[rightSquareOrder[i]].transform.GetChild(0).gameObject.SetActive(false);
             RightSideSquares[rightSquareOrder[i]].transform.SetPositionAndRotation(rightPositions[rightPositionsUsed[i]], zeroRotation);
-
-
-            if (leftSide)
-                EnableButtons(LeftSideSquares[leftSquareOrder[i]].transform.GetChild(0).GetComponentsInChildren<Button>(), true);
-            else
-                EnableButtons(RightSideSquares[rightSquareOrder[i]].transform.GetChild(0).GetComponentsInChildren<Button>(), true);
         }
     }
 
@@ -341,17 +358,31 @@ public class ColorSelectionManager : MonoBehaviour
             // Lado derecho
             RightSideSquares[rightSquareOrder[i]].SetActive(true);
             RightSideSquares[rightSquareOrder[i]].transform.GetChild(0).gameObject.SetActive(true);
+
+
+            if (leftSide)
+            {
+                EnableButtons(LeftSideSquares[leftSquareOrder[i]].transform.GetChild(0).GetComponentsInChildren<Button>(), true);
+                EnableButtonsImages(LeftSideSquares[leftSquareOrder[i]].transform.GetChild(0).GetComponentsInChildren<Image>(), false);
+            }
+            else
+            {
+                EnableButtons(RightSideSquares[rightSquareOrder[i]].transform.GetChild(0).GetComponentsInChildren<Button>(), true);
+                EnableButtonsImages(RightSideSquares[rightSquareOrder[i]].transform.GetChild(0).GetComponentsInChildren<Image>(), false);
+            }
         }
     }
-
 
     public void CheckColor()
     {
         string squareName = EventSystem.current.currentSelectedGameObject.transform.parent.transform.parent.name;
         string buttonName = EventSystem.current.currentSelectedGameObject.name;
         Button[] buttons = EventSystem.current.currentSelectedGameObject.transform.parent.GetComponentsInChildren<Button>();
+        Image[] images = EventSystem.current.currentSelectedGameObject.transform.parent.GetComponentsInChildren<Image>();
 
         EnableButtons(buttons, false);
+        EnableButtonsImages(images, true);
+
         switch (buttonName)
         {
             case "BlackButton":
@@ -420,6 +451,29 @@ public class ColorSelectionManager : MonoBehaviour
             buttons[i].enabled = enable;
     }
 
+    void EnableButtonsImages(Image[] images, bool enable)
+    {
+
+        if (enable)
+        {
+            images[0].color = Color.black;
+            images[1].color = new Color32(255, 0, 0, 255);
+            images[2].color = new Color32(0, 255, 0, 255);
+            images[3].color = new Color32(0, 0, 255, 255);
+            images[4].color = new Color32(255, 255, 0, 255);
+            images[5].color = new Color32(0, 255, 255, 255);
+            images[6].color = new Color32(255, 0, 255, 255);
+            images[7].color = Color.white;
+            images[8].color = new Color32(255, 128, 0, 255);
+
+        }
+        else
+        {
+            for (int i = 0; i < images.Length; i++)
+                images[i].color = Color.white;
+        }
+    }
+
     private void TrialResetTrigger()
     {
         if (leftSide)
@@ -452,7 +506,6 @@ public class ColorSelectionManager : MonoBehaviour
         }
     }
     
-
     public bool RunNITrigger(int trigger, int lines)
     {
         bool status = false;
