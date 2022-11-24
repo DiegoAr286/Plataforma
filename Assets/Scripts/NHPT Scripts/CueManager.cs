@@ -7,32 +7,32 @@ using Janelia;
 
 public class CueManager : MonoBehaviour
 {
-    [Header("Configuraciï¿½n escena")]
+    [Header("Configuración escena")]
     public GameObject paradigmScene;
 
     public HapticGrabberHandCB hapticGrabberHand;
     private bool rightHand = true;
     private bool mirrored = false;
 
-    [Header("Grabaciï¿½n de cï¿½mara")]
+    [Header("Grabación de cámara")]
     public VideoRecord videoRecorder;
 
     [Header("Almacenamiento de datos")]
     public FileManager fileManager;
     private bool writtenData = false;
 
-    [Header("Configuraciï¿½n Pegs")]
+    [Header("Configuración Pegs")]
     public GameObject[] Pegs = { null, null, null, null }; // Array que contiene pegs
     private Vector3[] PegPosition; // Contiene las posiciones iniciales de los pegs
     private Quaternion[] PegRotation; // Contiene las rotaciones iniciales de los pegs
 
-    [HideInInspector] public float currentTime = 0; // Tiempo que pasï¿½ desde que comienza el turno de mover un peg, en segundos
-    //[HideInInspector] public float totalCurrentTime = 0; // Tiempo que pasï¿½ desde el comienzo de la prueba
+    [HideInInspector] public float currentTime = 0; // Tiempo que pasó desde que comienza el turno de mover un peg, en segundos
+    //[HideInInspector] public float totalCurrentTime = 0; // Tiempo que pasó desde el comienzo de la prueba
 
     public int startSphereWaitTime = 8; // Tiempo que tarda en comenzar la tarea luego de tocar la esfera de inicio
     public int initTime = 1; // Tiempo que tarda en modificarse los colores del peg desde que termina el turno anterior
     public int goTime = 3; // Tiempo que tarda en pasar de rojo a verde un peg
-    public int maxTime = 10; // Tiempo mï¿½ximo que durarï¿½ un turno
+    public int maxTime = 10; // Tiempo máximo que durará un turno
 
     public int totalPegsEntered = 45;
     public bool modeReset = false;
@@ -41,16 +41,16 @@ public class CueManager : MonoBehaviour
 
     public Material originalMaterial; // Material original (blanco)
     public Material goMaterial; // Material verde
-    public Material highlightMaterial; // Material que resaltarï¿½ al peg (rojo)
+    public Material highlightMaterial; // Material que resaltará al peg (rojo)
 
-    [Header("Configuraciï¿½n Holes")]
+    [Header("Configuración Holes")]
     public GameObject[] HoleBases = { null, null, null, null }; // Array de agujeros
-    [Range(1, 9)] public int holeNumber = 1; // Representa el agujero seleccionado en el que se introducirï¿½ el peg
+    [Range(1, 9)] public int holeNumber = 1; // Representa el agujero seleccionado en el que se introducirá el peg
 
-    public PegHoleCollisionEvent[] PHCollisionEvents = { null, null }; // Array que contiene los eventos de colisiï¿½n de los agujeros
+    public PegHoleCollisionEvent[] PHCollisionEvents = { null, null }; // Array que contiene los eventos de colisión de los agujeros
 
-    [Header("Posiciï¿½n de inicio")]
-    public StartSphereCollisionEvent startSphereCollisionEvent; // Evento de colisiï¿½n con esfera de inicio
+    [Header("Posición de inicio")]
+    public StartSphereCollisionEvent startSphereCollisionEvent; // Evento de colisión con esfera de inicio
 
     private bool startSphereTouch = false;
     GameObject startSphere;
@@ -66,33 +66,35 @@ public class CueManager : MonoBehaviour
     private int numberPegsEntered = 0; // Variable que cuenta la cantidad de pegs ingresados
     private bool[] pegsEntered = {false, false, false,
                                 false, false, false,
-                                false, false, false }; // Array de bools que permite encontrar cuï¿½les pegs ya tuvieron su turno
+                                false, false, false }; // Array de bools que permite encontrar cuáles pegs ya tuvieron su turno
     private bool[] holesEntered = {false, false, false,
                                 false, false, false,
-                                false, false, false }; // Array de bools que permite encontrar cuï¿½les agujeros ya tuvieron su turno
+                                false, false, false }; // Array de bools que permite encontrar cuáles agujeros ya tuvieron su turno
     [HideInInspector] public bool pegDeactivate = true;
     private bool pegActivated = false;
 
-    private bool isCamRec; // Opciï¿½n cï¿½mara
+    private bool isCamRec; // Opción cámara
 
     private bool cameraRecording = false;
 
     // NI link
-    NiDaqMx.DigitalOutputParams digitalOutputParams;
-    private int numWritten = 0;
+    NiDaqMx.DigitalOutputParams[] digitalOutputParams; // Parámetros NI
     private bool writeState = false;
+    private int numWritten = 0;
+    private int lines = 7; // Líneas digitales a escribir
     private int frameCounterNI = 0;
-    private bool toggleDig = true;
 
-    private bool isAnalogAcquisition = true; // Opciï¿½n adquisiciï¿½n
+    //private bool toggleDig = true;
+
+    private bool isAnalogAcquisition = true; // Opción adquisición
 
     // Start is called before the first frame update
     void Start()
     {
-        // Desactiva colisiï¿½n entre los pegs y el plano invisible
+        // Desactiva colisión entre los pegs y el plano invisible
         DisablePegPlaneCollisions();
 
-        // Establece una conexiï¿½n con el evento de toque de la esfera de inicio
+        // Establece una conexión con el evento de toque de la esfera de inicio
         startSphereCollisionEvent.onTriggerEnter.AddListener(StartSphereEvent);
 
         startSphere = GameObject.Find("StartSphere"); // Busca el objeto esfera de inicio
@@ -117,8 +119,8 @@ public class CueManager : MonoBehaviour
         {
             HoleBases[i].SetActive(false); // Desactiva los pegs fantasma de los agujeros
 
-            PHCollisionEvents[i].onTriggerEnter.AddListener(PegEnter); // Establece una conexiï¿½n con los eventos de entrada de los pegs
-            PHCollisionEvents[i].onTriggerExit.AddListener(PegExit); // Establece una conexiï¿½n con los eventos de salida de los pegs
+            PHCollisionEvents[i].onTriggerEnter.AddListener(PegEnter); // Establece una conexión con los eventos de entrada de los pegs
+            PHCollisionEvents[i].onTriggerExit.AddListener(PegExit); // Establece una conexión con los eventos de salida de los pegs
         }
 
         //pegNumber = Random.Range(1, 10); // Busca un peg random
@@ -141,16 +143,14 @@ public class CueManager : MonoBehaviour
 
         if (isAnalogAcquisition)
         {
-            digitalOutputParams = new NiDaqMx.DigitalOutputParams();
-            bool n = NiDaqMx.CreateDigitalOutput(digitalOutputParams); // Inicializaciï¿½n de variables de conexiï¿½n con placa de adquisiciï¿½n
-            if (n)
+            // Inicializa variables NI
+            digitalOutputParams = new NiDaqMx.DigitalOutputParams[8];
+            for (int i = 0; i < 8; i++)
             {
-                Debug.Log("NI Conectado");
-                // Inicializa salidas digitales en alto
-                n = RunNITrigger(0);
+                digitalOutputParams[i] = new NiDaqMx.DigitalOutputParams();
+                _ = NiDaqMx.CreateDigitalOutput(digitalOutputParams[i], false, i);
             }
-            else
-                Debug.Log("NI Fallï¿½");
+            writeState = RunNITrigger(0, lines);
         }
 
         MirrorScene();
@@ -166,7 +166,8 @@ public class CueManager : MonoBehaviour
                 for (int i = 0; i < 8; i++)
                     NiDaqMx.ClearOutputTask(digitalOutputParams[i]);
             }
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1); // Salir del test al menï¿½ inicial
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1); // Salir del test al menú inicial
+        }
 
         // Da el ancho de pulso
         if (writeState)
@@ -175,35 +176,35 @@ public class CueManager : MonoBehaviour
 
             if (writeState && frameCounterNI == 7)
             {
-                writeState = RunNITrigger(0);
+                writeState = RunNITrigger(0, lines);
                 frameCounterNI = 0;
             }
         }
-        
-        // Al presionar espacio regresa los pegs a su posiciï¿½n inicial
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            //ResetPegs();
-            if (toggleDig)
-            {
-                //writeState = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 0, 0, 0, 0, 0, 0, 0, 0 }, ref numWritten);
-                writeState = RunNITrigger(2);
 
-                toggleDig = false;
-                Debug.Log(writeState);
-            }
-            else
-            {
-                //writeState = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 1, 1, 1, 1, 1, 1, 1, 1 }, ref numWritten);
-                writeState = RunNITrigger(1);
+        //// Al presionar espacio regresa los pegs a su posición inicial
+        //if (Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    //ResetPegs();
+        //    if (toggleDig)
+        //    {
+        //        //writeState = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 0, 0, 0, 0, 0, 0, 0, 0 }, ref numWritten);
+        //        writeState = RunNITrigger(2);
 
-                toggleDig = true;
-                Debug.Log(writeState);
-            }
-            //writeState = RunNITrigger(1);
+        //        toggleDig = false;
+        //        Debug.Log(writeState);
+        //    }
+        //    else
+        //    {
+        //        //writeState = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 1, 1, 1, 1, 1, 1, 1, 1 }, ref numWritten);
+        //        writeState = RunNITrigger(1);
 
-            return;
-        }
+        //        toggleDig = true;
+        //        Debug.Log(writeState);
+        //    }
+        //    //writeState = RunNITrigger(1);
+
+        //    return;
+        //}
 
         if (Input.GetKeyDown(KeyCode.S))
             MirrorScene();
@@ -212,12 +213,12 @@ public class CueManager : MonoBehaviour
 
 
 
-        if (numberPegsEntered < totalPegsEntered) // Verifica que el nï¿½mero de turnos no sea mayor al total
+        if (numberPegsEntered < totalPegsEntered) // Verifica que el número de turnos no sea mayor al total
         {
             if (pegDeactivate && currentTime >= startSphereWaitTime)
                 startSphere.SetActive(true);
 
-            if (Mathf.Abs(initTime - currentTime) < 0.05 && startSphereTouch) // Current time raramente toma un valor entero, entonces se define una diferencia mï¿½xima
+            if (Mathf.Abs(initTime - currentTime) < 0.05 && startSphereTouch) // Current time raramente toma un valor entero, entonces se define una diferencia máxima
             {
                 if (modeReset && numberPegsEntered != 0)
                     ResetPegs();
@@ -228,7 +229,7 @@ public class CueManager : MonoBehaviour
             {
                 GreenlightPeg();
             }
-            if ((Mathf.Abs(maxTime - currentTime) < 0.05) || pegEntered) // Current time raramente toma un valor entero, entonces se define una diferencia mï¿½xima
+            if ((Mathf.Abs(maxTime - currentTime) < 0.05) || pegEntered) // Current time raramente toma un valor entero, entonces se define una diferencia máxima
             {
                 DeactivatePeg();
             }
@@ -249,7 +250,7 @@ public class CueManager : MonoBehaviour
     }
 
 
-    public void ResetPegs() // Mï¿½todo que regresa los pegs a su posiciï¿½n inicial
+    public void ResetPegs() // Método que regresa los pegs a su posición inicial
     {
         if (PegPosition.Length != Pegs.Length) return;
 
@@ -301,7 +302,7 @@ public class CueManager : MonoBehaviour
         pegDeactivate = true;
         pegActivated = false;
 
-        currentTime = 0; // Resetea current time, para el prï¿½ximo turno
+        currentTime = 0; // Resetea current time, para el próximo turno
         numberPegsEntered++; // Suma uno a la cantidad de turnos
         pegEntered = false; // Setea en falso para poder iniciar el turno siguiente
 
@@ -345,14 +346,14 @@ public class CueManager : MonoBehaviour
         //}
     }
 
-    void PegEnter(Collider col) // Mï¿½todo llamado al producirse un evento de entrada de peg
+    void PegEnter(Collider col) // Método llamado al producirse un evento de entrada de peg
     {
         //Debug.Log("Peg in"); // Mensaje por consola
-        pegEntered = true; // Setea pegEntered en true, lo que terminarï¿½ el turno
+        pegEntered = true; // Setea pegEntered en true, lo que terminará el turno
         PHCollisionEvents[holeNumber - 1].onTriggerEnter.RemoveListener(PegEnter); // Se desvincula del evento del agujero usado
     }
 
-    void PegExit(Collider col) // Mï¿½todo llamado al producirse un evento de salida de peg (no usado)
+    void PegExit(Collider col) // Método llamado al producirse un evento de salida de peg (no usado)
     {
         //Debug.Log("Peg out"); // Mensaje por consola
     }
@@ -410,26 +411,48 @@ public class CueManager : MonoBehaviour
     }
 
 
-    public bool RunNITrigger(int trigger)
+    public bool RunNITrigger(int trigger, int lines)
     {
         bool status = false;
-
-        if (isAnalogAcquisition)
+        uint[] message = { 1 };
+        switch (trigger)
         {
-            switch (trigger)
-            {
-                case 0:
-                    _ = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 1, 1, 1, 1, 1, 1, 1, 1 }, ref numWritten);
-                    status = false;
-                    break;
-                case 1:
-                    status = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 0, 1, 1, 1, 1, 1, 1, 1 }, ref numWritten);
-                    break;
-                case 2:
-                    status = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 1, 0, 1, 1, 1, 1, 1, 1 }, ref numWritten);
-                    break;
-            }
+            case 0:
+                message = new uint[] { 1, 1, 1, 1, 1, 1, 1, 1 };
+                status = false;
+                break;
+            case 1:
+                message = new uint[] { 0, 0, 0, 1, 1, 1, 1, 1 };
+                break;
+            case 2:
+                message = new uint[] { 1, 0, 1, 1, 1, 1, 1, 1 }; // Trial izquierdo e incorrecto
+                break;
+            case 3:
+                message = new uint[] { 1, 1, 0, 1, 1, 1, 1, 1 }; // Trial izquierdo y correcto
+                break;
+            case 4:
+                message = new uint[] { 1, 1, 1, 0, 1, 1, 1, 1 }; // Trial derecho e incorrecto
+                break;
+            case 5:
+                message = new uint[] { 1, 1, 1, 1, 0, 1, 1, 1 }; // Trial derecho y correcto
+                break;
+            case 6:
+                message = new uint[] { 1, 1, 1, 1, 1, 0, 1, 1 };
+                break;
+            case 7:
+                message = new uint[] { 1, 1, 1, 1, 1, 1, 0, 1 };
+                break;
+            case 8:
+                message = new uint[] { 1, 1, 1, 1, 1, 1, 1, 0 };
+                break;
+            case 9:
+                message = new uint[] { 0, 0, 0, 0, 0, 0, 0, 0 };
+                break;
         }
+
+        for (int i = 0; i < lines; i++)
+            status = NiDaqMx.WriteDigitalValue(digitalOutputParams[i], new uint[] { message[i] }, ref numWritten);
+
         fileManager.StoreTrigger(trigger);
 
         return status;

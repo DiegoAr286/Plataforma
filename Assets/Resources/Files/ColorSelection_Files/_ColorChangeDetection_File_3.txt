@@ -1,7 +1,0 @@
-TrialNumber,SquareQuantity,Side-L1,Matches,Mistakes
-1,2,0,0,2
-2,2,0,0,2
-3,4,1,1,3
-4,4,1,0,4
-5,6,0,0,6
-6,6,1,2,4
