@@ -61,7 +61,7 @@ public class ColorComparisonManager : MonoBehaviour
     private bool writeState = false;
     private int numWritten = 0;
     private int lines = 7; // Líneas digitales a escribir
-    private int frameCounterNI = 0;
+    //private int frameCounterNI = 0;
 
     // Entrada digital
     NiDaqMx.DigitalInputParams digitalInputParams; // Parámetros NI
@@ -193,8 +193,6 @@ public class ColorComparisonManager : MonoBehaviour
         }
         if (squaresQuantity > 6 && task)
             TaskEnd();
-
-        TriggerPulseWidth();
     }
 
     private void TrialInit()
@@ -422,18 +420,11 @@ public class ColorComparisonManager : MonoBehaviour
                 writeState = RunNITrigger(4, lines);
         }
     }
-    private void TriggerPulseWidth()
-    {
-        if (writeState)
-        {
-            frameCounterNI++;
 
-            if (writeState && frameCounterNI == 7)
-            {
-                writeState = RunNITrigger(0, lines);
-                frameCounterNI = 0;
-            }
-        }
+    IEnumerator TriggerPulseWidth()
+    {
+        yield return new WaitForSecondsRealtime((float)0.01);
+        writeState = RunNITrigger(0, lines);
     }
 
     public bool RunNITrigger(int trigger, int lines)
@@ -477,6 +468,10 @@ public class ColorComparisonManager : MonoBehaviour
 
         for (int i = 0; i < lines; i++)
             status = NiDaqMx.WriteDigitalValue(digitalOutputParams[i], new uint[] { message[i] }, ref numWritten);
+
+        if (trigger != 0)
+            StartCoroutine(TriggerPulseWidth());
+
         return status;
     }
 }
