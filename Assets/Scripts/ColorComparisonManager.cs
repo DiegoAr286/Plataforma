@@ -43,6 +43,7 @@ public class ColorComparisonManager : MonoBehaviour
 
     private bool task = false;
     private int taskNumber = 0;
+    private bool duringTask = false;
 
     private bool comparisonMade = false;
     private bool comparisonWindow = false;
@@ -51,7 +52,7 @@ public class ColorComparisonManager : MonoBehaviour
     private int rightRepetitions = 0;
     private int leftRepetitions = 0;
 
-    private int fixedFrameCounter = 0;
+    //private int fixedFrameCounter = 0;
 
     // Entrenamiento
     private bool training = false;
@@ -148,7 +149,7 @@ public class ColorComparisonManager : MonoBehaviour
             SceneManager.LoadSceneAsync(0); // Salir del test al menú inicial
         }
 
-        
+
         // Entrada digital es 257 en alto, 1 para click izquierdo y 256 para click derecho
         if (readDigitalData[0] == 1 && !comparisonMade && comparisonWindow)
         {
@@ -170,29 +171,32 @@ public class ColorComparisonManager : MonoBehaviour
     void FixedUpdate()
     {
         if (task)
-            fixedFrameCounter++;
-
-        if (squaresQuantity <= 6)
-        {
             _ = NiDaqMx.ReadFromDigitalInput(digitalInputParams, ref readDigitalData, ref numReadPerChannel, ref numBytesPerSamp);
 
-            if (fixedFrameCounter == 50)
-                TrialInit();
+        if (task && !duringTask && squaresQuantity <= 6)
+            StartCoroutine(TaskGenerator());
 
-            if (fixedFrameCounter == 160)
-                TrialFirstSquares();
+        if (comparisonMade && comparisonWindow)
+            TrialReset();
 
-            if (fixedFrameCounter == 185)
-                TrialHideSquares();
-
-            if (fixedFrameCounter == 315)
-                TrialSecondSquares();
-
-            if (comparisonMade && comparisonWindow)
-                TrialReset();
-        }
         if (squaresQuantity > 6 && task)
             TaskEnd();
+    }
+
+    IEnumerator TaskGenerator()
+    {
+        duringTask = true;
+
+        yield return new WaitForSeconds((float)0.5);
+        TrialInit();
+
+        yield return new WaitForSeconds((float)1.1);
+        TrialFirstSquares();
+
+        yield return new WaitForSeconds((float)0.25);
+        TrialHideSquares();
+        yield return new WaitForSeconds((float)1.3);
+        TrialSecondSquares();
     }
 
     private void TrialInit()
@@ -279,12 +283,14 @@ public class ColorComparisonManager : MonoBehaviour
             FileManager.StoreDataInBuffer(taskNumber, squaresQuantity, leftSide ? 1 : 0, randomTrial ? 1 : 0, score);
 
         score = 0;
-        fixedFrameCounter = 0;
+        //fixedFrameCounter = 0;
         comparisonWindow = false;
         leftSquareOrder.Clear();
         leftPositionsUsed.Clear();
         rightSquareOrder.Clear();
         rightPositionsUsed.Clear();
+
+        duringTask = false;
     }
 
     private void TaskEnd()

@@ -40,12 +40,13 @@ public class ColorSelectionManager : MonoBehaviour
 
     private bool task = false;
     private int taskNumber = 0;
+    private bool duringTask = false;
 
     public int totalRepetitions = 10;
     private int rightRepetitions = 0;
     private int leftRepetitions = 0;
 
-    private int fixedFrameCounter = 0;
+    //private int fixedFrameCounter = 0;
 
     // Entrenamiento
     private bool training = false;
@@ -140,29 +141,30 @@ public class ColorSelectionManager : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (task) // && continueClick)
-            fixedFrameCounter++;
+        if (task && !duringTask && squaresQuantity <= 6)
+            StartCoroutine(TaskGenerator());
 
-        if (squaresQuantity <= 6)
-        {
-            if (fixedFrameCounter == 50)
-                TrialInit();
-
-            if (fixedFrameCounter == 160)
-                TrialFirstSquares();
-
-            if (fixedFrameCounter == 185)
-                TrialHideSquares();
-
-            if (fixedFrameCounter == 315)
-                TrialSecondSquares();
-
-            if ((score + mistakes) == squaresQuantity)
-                TrialReset();
-        }
+        if ((score + mistakes) == squaresQuantity)
+            TrialReset();
 
         if (squaresQuantity > 6 && task)
             TaskEnd();
+    }
+
+    IEnumerator TaskGenerator()
+    {
+        duringTask = true;
+
+        yield return new WaitForSeconds((float)0.5);
+        TrialInit();
+
+        yield return new WaitForSeconds((float)1.1);
+        TrialFirstSquares();
+
+        yield return new WaitForSeconds((float)0.25);
+        TrialHideSquares();
+        yield return new WaitForSeconds((float)1.3);
+        TrialSecondSquares();
     }
 
     private void TrialInit()
@@ -211,7 +213,7 @@ public class ColorSelectionManager : MonoBehaviour
     {
         DeactivateSquares();
     }
-    
+
     private void TrialSecondSquares()
     {
         ActivateButtons();
@@ -238,12 +240,14 @@ public class ColorSelectionManager : MonoBehaviour
 
         score = 0;
         mistakes = 0;
-        fixedFrameCounter = 0;
+        //fixedFrameCounter = 0;
         //continueClick = false;
         leftSquareOrder.Clear();
         leftPositionsUsed.Clear();
         rightSquareOrder.Clear();
         rightPositionsUsed.Clear();
+
+        duringTask = false;
     }
 
     private void TaskEnd()
@@ -307,7 +311,7 @@ public class ColorSelectionManager : MonoBehaviour
 
             // Lado derecho
             randNumber = Random.Range(0, 9);
-            
+
             while (rightPositionsUsed.Contains(randNumber))
             {
                 randNumber = Random.Range(0, 9);
