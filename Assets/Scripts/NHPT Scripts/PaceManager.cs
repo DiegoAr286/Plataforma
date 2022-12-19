@@ -59,8 +59,10 @@ public class PaceManager : MonoBehaviour
     private bool writeState = false;
     private int numWritten = 0;
     private int lines = 7; // Líneas digitales a escribir
-    //private int frameCounterNI = 0;
-    //private bool toggleDig = true;
+
+    NiDaqMx.DigitalOutputParams digitalOutputParamPort2; // Parámetros NI
+    private bool writeStatePort2 = false;
+
 
     private bool isAnalogAcquisition; // Opción adquisición
 
@@ -91,7 +93,6 @@ public class PaceManager : MonoBehaviour
             HoleBases[i].SetActive(false); // Desactiva los pegs fantasma de los agujeros
 
             PHCollisionEvents[i].onTriggerEnter.AddListener(PegEnter); // Establece una conexión con los eventos de entrada de los pegs
-            PHCollisionEvents[i].onTriggerExit.AddListener(PegExit); // Establece una conexión con los eventos de salida de los pegs
         }
 
 
@@ -111,6 +112,13 @@ public class PaceManager : MonoBehaviour
                 _ = NiDaqMx.CreateDigitalOutput(digitalOutputParams[i], false, i);
             }
             writeState = RunNITrigger(0, lines);
+
+
+            digitalOutputParamPort2 = new NiDaqMx.DigitalOutputParams();
+            _ = NiDaqMx.CreateDigitalOutput(digitalOutputParamPort2, port: 1);
+
+            // Se marca el inicio de la tarea
+            writeStatePort2 = RunNITriggerTestPort2(1);
         }
 
         MirrorScene();
@@ -126,10 +134,6 @@ public class PaceManager : MonoBehaviour
             MirrorScene();
 
         currentTime += Time.deltaTime; // Aumenta el tiempo en intervalos deltaTime, que es el tiempo entre frames
-
-        if (writeState)
-            writeState = RunNITrigger(0, lines);
-
 
         if (numberPegsEntered < totalPegsEntered) // Verifica que el número de turnos no sea mayor al total
         {
@@ -188,14 +192,8 @@ public class PaceManager : MonoBehaviour
 
     void PegEnter(Collider col) // Método llamado al producirse un evento de entrada de peg
     {
-        Debug.Log("Peg in"); // Mensaje por consola
         pegEntered = true; // Setea pegEntered en true, lo que terminará el turno
         PHCollisionEvents[holeNumber - 1].onTriggerEnter.RemoveListener(PegEnter); // Se desvincula del evento del agujero usado
-    }
-
-    void PegExit(Collider col) // Método llamado al producirse un evento de salida de peg (no usado)
-    {
-        Debug.Log("Peg out"); // Mensaje por consola
     }
 
     void DisablePegPlaneCollisions()
@@ -242,6 +240,13 @@ public class PaceManager : MonoBehaviour
         }
     }
 
+    IEnumerator TriggerPulseWidth()
+    {
+        yield return new WaitForSecondsRealtime((float)0.01);
+
+        if (writeState)
+            writeState = RunNITrigger(0, lines);
+    }
 
     public bool RunNITrigger(int trigger, int lines)
     {
@@ -257,16 +262,16 @@ public class PaceManager : MonoBehaviour
                 message = new uint[] { 0, 0, 0, 1, 1, 1, 1, 1 };
                 break;
             case 2:
-                message = new uint[] { 1, 0, 1, 1, 1, 1, 1, 1 }; // Trial izquierdo e incorrecto
+                message = new uint[] { 1, 0, 1, 1, 1, 1, 1, 1 };
                 break;
             case 3:
-                message = new uint[] { 1, 1, 0, 1, 1, 1, 1, 1 }; // Trial izquierdo y correcto
+                message = new uint[] { 1, 1, 0, 1, 1, 1, 1, 1 };
                 break;
             case 4:
-                message = new uint[] { 1, 1, 1, 0, 1, 1, 1, 1 }; // Trial derecho e incorrecto
+                message = new uint[] { 1, 1, 1, 0, 1, 1, 1, 1 };
                 break;
             case 5:
-                message = new uint[] { 1, 1, 1, 1, 0, 1, 1, 1 }; // Trial derecho y correcto
+                message = new uint[] { 1, 1, 1, 1, 0, 1, 1, 1 };
                 break;
             case 6:
                 message = new uint[] { 1, 1, 1, 1, 1, 0, 1, 1 };
@@ -287,6 +292,28 @@ public class PaceManager : MonoBehaviour
 
         fileManager.StoreTrigger(trigger);
 
+        if (trigger != 0)
+            StartCoroutine(TriggerPulseWidth());
+
+        return status;
+    }
+
+    public bool RunNITriggerTestPort2(int trigger)
+    {
+        bool status = false;
+        uint message = 0;
+        switch (trigger)
+        {
+            case 0:
+                message = 0;
+                status = false;
+                break;
+            case 1:
+                message = 1;
+                break;
+        }
+
+        status = NiDaqMx.WriteDigitalValue(digitalOutputParamPort2, new uint[] { message }, ref numWritten);
         return status;
     }
 }

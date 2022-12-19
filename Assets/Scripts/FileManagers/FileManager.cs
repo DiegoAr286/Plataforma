@@ -57,15 +57,7 @@ public class FileManager : MonoBehaviour
 
     public void StoreTrigger(int trigger)
     {
-        switch (trigger)
-        {
-            case 1:
-                triggerVector.Add(stylusPosition.Count - 1, 1);
-                break;
-            case 2:
-                triggerVector.Add(stylusPosition.Count - 1, 2);
-                break;
-        }
+        triggerVector.Add(stylusPosition.Count - 1, trigger);
     }
 
     public void StoreTrialOutcome(int trial)
@@ -81,7 +73,7 @@ public class FileManager : MonoBehaviour
     public void WriteData()
     {
         File.WriteAllText(path, "Position_x,Position_y,Position_z,Velocity_x,Velocity_y,Velocity_z,Time,Trigger,Trial,Grab\n");
-        
+
         //int noTrigger = -1;
         //int noTrial = -1;
         //int noGrab = -1;

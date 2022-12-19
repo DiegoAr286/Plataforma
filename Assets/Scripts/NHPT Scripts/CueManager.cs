@@ -425,16 +425,16 @@ public class CueManager : MonoBehaviour
                 message = new uint[] { 0, 0, 0, 1, 1, 1, 1, 1 };
                 break;
             case 2:
-                message = new uint[] { 1, 0, 1, 1, 1, 1, 1, 1 }; // Trial izquierdo e incorrecto
+                message = new uint[] { 1, 0, 1, 1, 1, 1, 1, 1 };
                 break;
             case 3:
-                message = new uint[] { 1, 1, 0, 1, 1, 1, 1, 1 }; // Trial izquierdo y correcto
+                message = new uint[] { 1, 1, 0, 1, 1, 1, 1, 1 };
                 break;
             case 4:
-                message = new uint[] { 1, 1, 1, 0, 1, 1, 1, 1 }; // Trial derecho e incorrecto
+                message = new uint[] { 1, 1, 1, 0, 1, 1, 1, 1 };
                 break;
             case 5:
-                message = new uint[] { 1, 1, 1, 1, 0, 1, 1, 1 }; // Trial derecho y correcto
+                message = new uint[] { 1, 1, 1, 1, 0, 1, 1, 1 };
                 break;
             case 6:
                 message = new uint[] { 1, 1, 1, 1, 1, 0, 1, 1 };
