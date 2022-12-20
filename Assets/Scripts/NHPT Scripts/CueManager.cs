@@ -82,7 +82,9 @@ public class CueManager : MonoBehaviour
     private bool writeState = false;
     private int numWritten = 0;
     private int lines = 7; // Líneas digitales a escribir
-    private int frameCounterNI = 0;
+
+    NiDaqMx.DigitalOutputParams digitalOutputParamPort2; // Parámetros NI
+    private bool writeStatePort2 = false;
 
     //private bool toggleDig = true;
 
@@ -120,11 +122,7 @@ public class CueManager : MonoBehaviour
             HoleBases[i].SetActive(false); // Desactiva los pegs fantasma de los agujeros
 
             PHCollisionEvents[i].onTriggerEnter.AddListener(PegEnter); // Establece una conexión con los eventos de entrada de los pegs
-            PHCollisionEvents[i].onTriggerExit.AddListener(PegExit); // Establece una conexión con los eventos de salida de los pegs
         }
-
-        //pegNumber = Random.Range(1, 10); // Busca un peg random
-        //holeNumber = Random.Range(1, 10); // Busca un agujero random
 
         pegOrder = new List<int>() { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
         holeOrder = new List<int>() { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -151,6 +149,13 @@ public class CueManager : MonoBehaviour
                 _ = NiDaqMx.CreateDigitalOutput(digitalOutputParams[i], false, i);
             }
             writeState = RunNITrigger(0, lines);
+
+
+            digitalOutputParamPort2 = new NiDaqMx.DigitalOutputParams();
+            _ = NiDaqMx.CreateDigitalOutput(digitalOutputParamPort2, port: 1);
+
+            // Se marca el inicio de la tarea
+            writeStatePort2 = RunNITriggerTestPort2(1);
         }
 
         MirrorScene();
@@ -169,17 +174,6 @@ public class CueManager : MonoBehaviour
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1); // Salir del test al menú inicial
         }
 
-        // Da el ancho de pulso
-        if (writeState)
-        {
-            frameCounterNI++;
-
-            if (writeState && frameCounterNI == 7)
-            {
-                writeState = RunNITrigger(0, lines);
-                frameCounterNI = 0;
-            }
-        }
 
         //// Al presionar espacio regresa los pegs a su posición inicial
         //if (Input.GetKeyDown(KeyCode.Space))
@@ -320,30 +314,6 @@ public class CueManager : MonoBehaviour
 
         pegNumber = pegOrder[pegIndex];
         holeNumber = holeOrder[pegIndex];
-
-        //if (numberPegsEntered % Pegs.Length == 0)
-        //{
-        //    for (int i = 0; i < Pegs.Length; i++)
-        //    {
-        //        pegsEntered[i] = false;
-        //        holesEntered[i] = false;
-        //    }
-        //}
-
-        //if (numberPegsEntered % Pegs.Length != 0) // Verifica que no se hayan colocado todos los pegs
-        //{
-        //    do
-        //    {
-        //        pegNumber = Random.Range(1, 10); // Busca un peg random
-        //    }
-        //    while (pegsEntered[pegNumber - 1]); // Sigue buscando mientras se haya elegido uno ya usado
-
-        //    do
-        //    {
-        //        holeNumber = Random.Range(1, 10); // Busca un agujero random
-        //    }
-        //    while (holesEntered[holeNumber - 1]); // Sigue buscando mientras se haya elegido uno ya usado
-        //}
     }
 
     void PegEnter(Collider col) // Método llamado al producirse un evento de entrada de peg
@@ -351,11 +321,6 @@ public class CueManager : MonoBehaviour
         //Debug.Log("Peg in"); // Mensaje por consola
         pegEntered = true; // Setea pegEntered en true, lo que terminará el turno
         PHCollisionEvents[holeNumber - 1].onTriggerEnter.RemoveListener(PegEnter); // Se desvincula del evento del agujero usado
-    }
-
-    void PegExit(Collider col) // Método llamado al producirse un evento de salida de peg (no usado)
-    {
-        //Debug.Log("Peg out"); // Mensaje por consola
     }
 
     void DisablePegPlaneCollisions()
@@ -410,6 +375,13 @@ public class CueManager : MonoBehaviour
         fileManager.StoreGrabMoment();
     }
 
+    IEnumerator TriggerPulseWidth()
+    {
+        yield return new WaitForSecondsRealtime((float)0.01);
+
+        if (writeState)
+            writeState = RunNITrigger(0, lines);
+    }
 
     public bool RunNITrigger(int trigger, int lines)
     {
@@ -454,7 +426,28 @@ public class CueManager : MonoBehaviour
             status = NiDaqMx.WriteDigitalValue(digitalOutputParams[i], new uint[] { message[i] }, ref numWritten);
 
         fileManager.StoreTrigger(trigger);
+        
+        if (trigger != 0)
+            StartCoroutine(TriggerPulseWidth());
 
+        return status;
+    }
+    public bool RunNITriggerTestPort2(int trigger)
+    {
+        bool status = false;
+        uint message = 0;
+        switch (trigger)
+        {
+            case 0:
+                message = 0;
+                status = false;
+                break;
+            case 1:
+                message = 1;
+                break;
+        }
+
+        status = NiDaqMx.WriteDigitalValue(digitalOutputParamPort2, new uint[] { message }, ref numWritten);
         return status;
     }
 
