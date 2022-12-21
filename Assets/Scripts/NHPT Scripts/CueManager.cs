@@ -170,6 +170,9 @@ public class CueManager : MonoBehaviour
             {
                 for (int i = 0; i < 8; i++)
                     NiDaqMx.ClearOutputTask(digitalOutputParams[i]);
+
+                writeStatePort2 = RunNITriggerTestPort2(0);
+                NiDaqMx.ClearOutputTask(digitalOutputParamPort2);
             }
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1); // Salir del test al menú inicial
         }
@@ -239,6 +242,11 @@ public class CueManager : MonoBehaviour
             {
                 fileManager.WriteData();
                 writtenData = true;
+            }
+            if (isAnalogAcquisition)
+            {
+                // Se marca el fin de la tarea
+                writeStatePort2 = RunNITriggerTestPort2(0);
             }
         }
     }
@@ -425,10 +433,12 @@ public class CueManager : MonoBehaviour
         for (int i = 0; i < lines; i++)
             status = NiDaqMx.WriteDigitalValue(digitalOutputParams[i], new uint[] { message[i] }, ref numWritten);
 
-        fileManager.StoreTrigger(trigger);
         
         if (trigger != 0)
+        {
+            fileManager.StoreTrigger(trigger);
             StartCoroutine(TriggerPulseWidth());
+        }
 
         return status;
     }

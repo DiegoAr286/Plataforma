@@ -86,23 +86,17 @@ public class FileManager : MonoBehaviour
         for (int i = 0; i < stylusPosition.Count; i++)
         {
             if (triggerVector.ContainsKey(i))
-            {
                 trigger = triggerVector[i];
-            }
             else
                 trigger = -1;
 
             if (trialVector.ContainsKey(i))
-            {
                 trial = trialVector[i];
-            }
             else
                 trial = -1;
 
             if (grabVector.ContainsKey(i))
-            {
                 grab = grabVector[i];
-            }
             else
                 grab = -1;
 
