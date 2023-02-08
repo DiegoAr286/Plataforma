@@ -1078,7 +1078,7 @@ MonoBehaviour:
   initTime: 1
   goTime: 3
   maxTime: 30
-  totalPegsEntered: 18
+  totalPegsEntered: 36
   modeReset: 1
   pegNumber: 3
   originalMaterial: {fileID: 2100000, guid: ee3c5b7e0e6ef7443b8030b34a96251c, type: 2}

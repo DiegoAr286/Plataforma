@@ -95,12 +95,8 @@ public class PaceManager : MonoBehaviour
             PHCollisionEvents[i].onTriggerEnter.AddListener(PegEnter); // Establece una conexión con los eventos de entrada de los pegs
         }
 
-
-        if (isCamRec)
-        {
-            videoRecorder.StartVideoCapture();
-            cameraRecording = true;
-        }
+        if (isCamRec || isAnalogAcquisition)
+            StartCoroutine(AcquisitionStart());
 
         if (isAnalogAcquisition)
         {
@@ -112,16 +108,9 @@ public class PaceManager : MonoBehaviour
                 _ = NiDaqMx.CreateDigitalOutput(digitalOutputParams[i], false, i);
             }
             writeState = RunNITrigger(0, lines);
-
-
-            digitalOutputParamPort2 = new NiDaqMx.DigitalOutputParams();
-            _ = NiDaqMx.CreateDigitalOutput(digitalOutputParamPort2, port: 1);
-
-            // Se marca el inicio de la tarea
-            writeStatePort2 = RunNITriggerTestPort2(1);
         }
 
-        MirrorScene();
+            MirrorScene();
     }
 
     // Update is called once per frame
@@ -134,7 +123,7 @@ public class PaceManager : MonoBehaviour
                 for (int i = 0; i < 8; i++)
                     NiDaqMx.ClearOutputTask(digitalOutputParams[i]);
 
-                writeStatePort2 = RunNITriggerTestPort2(0);
+                writeStatePort2 = RunNITriggerTestPort2(1);
                 NiDaqMx.ClearOutputTask(digitalOutputParamPort2);
             }
 
@@ -188,11 +177,30 @@ public class PaceManager : MonoBehaviour
             if (isAnalogAcquisition)
             {
                 // Se marca el fin de la tarea
-                writeStatePort2 = RunNITriggerTestPort2(0);
+                writeStatePort2 = RunNITriggerTestPort2(1);
             }
         }
     }
 
+    IEnumerator AcquisitionStart()
+    {
+        if (isCamRec)
+        {
+            videoRecorder.StartVideoCapture();
+            cameraRecording = true;
+            yield return new WaitForSeconds((float)3);
+        }
+
+        if (isAnalogAcquisition)
+        {
+            digitalOutputParamPort2 = new NiDaqMx.DigitalOutputParams();
+            _ = NiDaqMx.CreateDigitalOutput(digitalOutputParamPort2, port: 1);
+
+            // Se marca el inicio de la tarea
+            writeStatePort2 = RunNITriggerTestPort2(0);
+        }
+
+    }
 
     public void ResetPegs() // Método que regresa los pegs a su posición inicial
     {
@@ -335,7 +343,7 @@ public class PaceManager : MonoBehaviour
 
         status = NiDaqMx.WriteDigitalValue(digitalOutputParamPort2, new uint[] { message }, ref numWritten);
 
-        //fileManager.StoreTrigger(trigger+10);
+        fileManager.StoreTrigger(trigger+10);
         return status;
     }
 }
