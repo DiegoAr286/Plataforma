@@ -231,13 +231,16 @@ public class CueManager : MonoBehaviour
             if (!writtenData && currentTime > 0.5)
             {
                 fileManager.WriteData();
+
+                if (isAnalogAcquisition)
+                {
+                    // Se marca el fin de la tarea
+                    writeStatePort2 = RunNITriggerTestPort2(1);
+                }
+
                 writtenData = true;
             }
-            if (isAnalogAcquisition)
-            {
-                // Se marca el fin de la tarea
-                writeStatePort2 = RunNITriggerTestPort2(1);
-            }
+            
         }
     }
 
@@ -411,7 +414,7 @@ public class CueManager : MonoBehaviour
                 status = false;
                 break;
             case 1:
-                message = new uint[] { 0, 0, 0, 1, 1, 1, 1, 1 };
+                message = new uint[] { 0, 1, 1, 1, 1, 1, 1, 1 };
                 break;
             case 2:
                 message = new uint[] { 1, 0, 1, 1, 1, 1, 1, 1 };
