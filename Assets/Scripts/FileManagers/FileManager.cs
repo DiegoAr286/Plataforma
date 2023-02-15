@@ -13,6 +13,9 @@ public class FileManager : MonoBehaviour
     private List<Vector3> stylusVelocity;
 
     private List<float> timeVector;
+
+    private List<string> angleData;
+
     private Dictionary<int, int> triggerVector;
 
     private Dictionary<int, int> trialVector;
@@ -34,6 +37,7 @@ public class FileManager : MonoBehaviour
         stylusPosition = new List<Vector3>();
         stylusVelocity = new List<Vector3>();
         timeVector = new List<float>();
+        angleData = new List<string> ();
         triggerVector = new Dictionary<int, int>();
         trialVector = new Dictionary<int, int>();
         grabVector = new Dictionary<int, int>();
@@ -45,7 +49,6 @@ public class FileManager : MonoBehaviour
         currentTime = Time.timeSinceLevelLoad;
 
         StoreDataInBuffer();
-
     }
 
     void StoreDataInBuffer()
@@ -53,6 +56,11 @@ public class FileManager : MonoBehaviour
         stylusPosition.Add(omni.stylusPositionRaw);
         stylusVelocity.Add(omni.stylusVelocityRaw);
         timeVector.Add(currentTime);
+    }
+
+    public void StoreAngleData(string angle)
+    {
+        angleData.Add(angle);
     }
 
     public void StoreTrigger(int trigger)
@@ -72,11 +80,7 @@ public class FileManager : MonoBehaviour
 
     public void WriteData()
     {
-        File.WriteAllText(path, "Position_x,Position_y,Position_z,Velocity_x,Velocity_y,Velocity_z,Time,Trigger,Trial,Grab\n");
-
-        //int noTrigger = -1;
-        //int noTrial = -1;
-        //int noGrab = -1;
+        File.WriteAllText(path, "Position_x,Position_y,Position_z,Velocity_x,Velocity_y,Velocity_z,Angle,Time,Trigger,Trial,Grab\n");
 
         int trigger;
         int trial;
@@ -101,10 +105,10 @@ public class FileManager : MonoBehaviour
                 grab = -1;
 
 
-            File.AppendAllText(path, String.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9}\n",
+            File.AppendAllText(path, String.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}\n",
                 stylusPosition[i].x.ToString(cult), stylusPosition[i].y.ToString(cult), stylusPosition[i].z.ToString(cult),
                 stylusVelocity[i].x.ToString(cult), stylusVelocity[i].y.ToString(cult), stylusVelocity[i].z.ToString(cult),
-                timeVector[i].ToString(cult), trigger.ToString(), trial.ToString(), grab.ToString()));
+                angleData[i], timeVector[i].ToString(cult), trigger.ToString(), trial.ToString(), grab.ToString()));
         }
     }
 }
