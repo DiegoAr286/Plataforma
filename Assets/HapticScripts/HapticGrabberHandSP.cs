@@ -24,7 +24,7 @@ public class HapticGrabberHandSP : MonoBehaviour
 
 	public GameObject grabberParent; // Used to change the gripper (hand) model
 	private int openHand; // When =1, activates the model of the open hand, when =2, activates the closed hand
-	private bool hand = false; // true = right hand
+	private bool rightHand = false; // true = right hand
 
 
 	//! Automatically called for initialization
@@ -52,21 +52,6 @@ public class HapticGrabberHandSP : MonoBehaviour
 
 		openHand = 1; // Mano derecha abierta inicialmente
 		ModelSwitch(0);
-		//grabberParent.transform.GetChild(1).gameObject.SetActive(false); // Desactiva los demás modelos
-		//grabberParent.transform.GetChild(2).gameObject.SetActive(false);
-		//grabberParent.transform.GetChild(3).gameObject.SetActive(false);
-
-	}
-
-	void Update()
-	{
-
-		// Change hand
-		//if (Input.GetKeyDown("s"))
-		//{
-		//	ChangeHand();
-		//}
-
 	}
 
 	void disableUnityCollisions()
@@ -155,7 +140,7 @@ public class HapticGrabberHandSP : MonoBehaviour
 
 	public void ChangeHand()
     {
-		hand = !hand; // Togglea entre mano izquierda y derecha
+		rightHand = !rightHand; // Togglea entre mano izquierda y derecha
 		ModelSwitch(0);
 	}
 
@@ -165,28 +150,28 @@ public class HapticGrabberHandSP : MonoBehaviour
 		{
 			openHand = modelN;
 		}
-		if (openHand == 1 && hand) // Mano derecha abierta
+		if (openHand == 1 && rightHand) // Mano derecha abierta
 		{
 			grabberParent.transform.GetChild(0).gameObject.SetActive(true);
 			grabberParent.transform.GetChild(1).gameObject.SetActive(false);
 			grabberParent.transform.GetChild(2).gameObject.SetActive(false);
 			grabberParent.transform.GetChild(3).gameObject.SetActive(false);
 		}
-		else if (openHand == 2 && hand) // Mano derecha cerrada
+		else if (openHand == 2 && rightHand) // Mano derecha cerrada
 		{
 			grabberParent.transform.GetChild(0).gameObject.SetActive(false);
 			grabberParent.transform.GetChild(1).gameObject.SetActive(true);
 			grabberParent.transform.GetChild(2).gameObject.SetActive(false);
 			grabberParent.transform.GetChild(3).gameObject.SetActive(false);
 		}
-		else if (openHand == 1 && !hand) // Mano izquierda abierta
+		else if (openHand == 1 && !rightHand) // Mano izquierda abierta
 		{
 			grabberParent.transform.GetChild(0).gameObject.SetActive(false);
 			grabberParent.transform.GetChild(1).gameObject.SetActive(false);
 			grabberParent.transform.GetChild(2).gameObject.SetActive(true);
 			grabberParent.transform.GetChild(3).gameObject.SetActive(false);
 		}
-		else if (openHand == 2 && !hand) // Mano izquierda cerrada
+		else if (openHand == 2 && !rightHand) // Mano izquierda cerrada
 		{
 			grabberParent.transform.GetChild(0).gameObject.SetActive(false);
 			grabberParent.transform.GetChild(1).gameObject.SetActive(false);

@@ -17,6 +17,9 @@ public class PaceManager : MonoBehaviour
     [Header("Grabación de cámara")]
     public VideoRecord videoRecorder;
 
+    [Header("Conexión Serie")]
+    public SerialConnection serialConnector;
+
     [Header("Almacenamiento de datos")]
     public FileManager fileManager;
     private bool writtenData = false;
@@ -54,6 +57,8 @@ public class PaceManager : MonoBehaviour
 
     private bool cameraRecording = false;
 
+    private bool isSerialConnection = false;
+
     // NI link
     NiDaqMx.DigitalOutputParams[] digitalOutputParams; // Parámetros NI
     private bool writeState = false;
@@ -77,7 +82,9 @@ public class PaceManager : MonoBehaviour
 
         isAnalogAcquisition = PlayerPrefs.GetInt("AnalogAcquisition", 1) == 1; // if true
 
-        rightHand = PlayerPrefs.GetInt("RightHand_NHPTsp", 0) == 1;
+        isSerialConnection = PlayerPrefs.GetInt("SerialConnection", 1) == 1;
+
+        rightHand = PlayerPrefs.GetInt("RightHand_NHPT", 0) == 1;
 
         // Guarda posiciones y rotaciones iniciales de los pegs
         PegPosition = new Vector3[Pegs.Length];
@@ -110,7 +117,7 @@ public class PaceManager : MonoBehaviour
             writeState = RunNITrigger(0, lines);
         }
 
-            MirrorScene();
+        MirrorScene();
     }
 
     // Update is called once per frame
@@ -135,6 +142,11 @@ public class PaceManager : MonoBehaviour
             MirrorScene();
 
         currentTime += Time.deltaTime; // Aumenta el tiempo en intervalos deltaTime, que es el tiempo entre frames
+
+        if (isSerialConnection)
+        {
+            fileManager.StoreAngleData(serialConnector.GetAngle());
+        }
 
         if (numberPegsEntered < totalPegsEntered) // Verifica que el número de turnos no sea mayor al total
         {
@@ -169,15 +181,21 @@ public class PaceManager : MonoBehaviour
                 videoRecorder.StopVideoCapture();
                 cameraRecording = false;
             }
+            if (isSerialConnection)
+            {
+                serialConnector.SerialCloseConnection();
+            }
             if (!writtenData)
             {
                 fileManager.WriteData();
+
+                if (isAnalogAcquisition)
+                {
+                    // Se marca el fin de la tarea
+                    writeStatePort2 = RunNITriggerTestPort2(1);
+                }
+
                 writtenData = true;
-            }
-            if (isAnalogAcquisition)
-            {
-                // Se marca el fin de la tarea
-                writeStatePort2 = RunNITriggerTestPort2(1);
             }
         }
     }
@@ -188,8 +206,9 @@ public class PaceManager : MonoBehaviour
         {
             videoRecorder.StartVideoCapture();
             cameraRecording = true;
-            yield return new WaitForSeconds((float)3);
         }
+
+        yield return new WaitForSeconds((float)3);
 
         if (isAnalogAcquisition)
         {
@@ -200,6 +219,10 @@ public class PaceManager : MonoBehaviour
             writeStatePort2 = RunNITriggerTestPort2(0);
         }
 
+        if (isSerialConnection)
+        {
+            serialConnector.SerialStartConnection();
+        }
     }
 
     public void ResetPegs() // Método que regresa los pegs a su posición inicial
