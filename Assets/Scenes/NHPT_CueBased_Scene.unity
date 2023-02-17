@@ -1157,8 +1157,6 @@ MonoBehaviour:
   - {fileID: 1381202686}
   - {fileID: 2101282320}
   startSphereCollisionEvent: {fileID: 2145939670}
-  endTrial: 0
-  pegDeactivate: 1
 --- !u!1001 &1213334217
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2598,7 +2596,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1136459129811601720, guid: 2720eed308c29c749923715755810af6, type: 3}
       propertyPath: m_Name
-      value: Peg
+      value: Peg (0)
       objectReference: {fileID: 0}
     - target: {fileID: 1136459129811637528, guid: 2720eed308c29c749923715755810af6, type: 3}
       propertyPath: m_RootOrder
@@ -2669,21 +2667,29 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3027281865493943653, guid: 1244988d5add2f449a246dc0fab8ac27, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3027281865963105887, guid: 1244988d5add2f449a246dc0fab8ac27, type: 3}
-      propertyPath: cueManager
+    - target: {fileID: 1604939534488875591, guid: 1244988d5add2f449a246dc0fab8ac27, type: 3}
+      propertyPath: grabberParent
       value: 
-      objectReference: {fileID: 1169107608}
-    - target: {fileID: 3027281865963105887, guid: 1244988d5add2f449a246dc0fab8ac27, type: 3}
+      objectReference: {fileID: 3027281866440716163}
+    - target: {fileID: 1604939534488875591, guid: 1244988d5add2f449a246dc0fab8ac27, type: 3}
       propertyPath: physicsToggleStyle
       value: 2
       objectReference: {fileID: 0}
-    - target: {fileID: 3027281865963105887, guid: 1244988d5add2f449a246dc0fab8ac27, type: 3}
-      propertyPath: DisableUnityCollisionsWithTouchableObjects
+    - target: {fileID: 1604939534488875591, guid: 1244988d5add2f449a246dc0fab8ac27, type: 3}
+      propertyPath: onPegGrab.m_PersistentCalls.m_Calls.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1604939534488875591, guid: 1244988d5add2f449a246dc0fab8ac27, type: 3}
+      propertyPath: onPegGrab.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1604939534488875591, guid: 1244988d5add2f449a246dc0fab8ac27, type: 3}
+      propertyPath: onPegGrab.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3027281865493943653, guid: 1244988d5add2f449a246dc0fab8ac27, type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3027964555320329480, guid: 1244988d5add2f449a246dc0fab8ac27, type: 3}
       propertyPath: m_TagString
@@ -2777,13 +2783,13 @@ CapsuleCollider:
   m_Center: {x: 0.1716777, y: 0.07834636, z: -0.3035611}
 --- !u!114 &3027281866440716165 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3027281865963105887, guid: 1244988d5add2f449a246dc0fab8ac27, type: 3}
+  m_CorrespondingSourceObject: {fileID: 1604939534488875591, guid: 1244988d5add2f449a246dc0fab8ac27, type: 3}
   m_PrefabInstance: {fileID: 3027281866440716162}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3027281866440716163}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a60de31598d3cfb4687e88fcca6c38dd, type: 3}
+  m_Script: {fileID: 11500000, guid: d38feef13592a7c4baff407b7998983a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &7149935636245448396
@@ -2795,7 +2801,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 7149935637201862620, guid: 4abadad484946ff45bd562e19abdd075, type: 3}
       propertyPath: m_Name
-      value: HoleBase
+      value: HoleBase(0)
       objectReference: {fileID: 0}
     - target: {fileID: 7149935637201862621, guid: 4abadad484946ff45bd562e19abdd075, type: 3}
       propertyPath: m_RootOrder

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine;
 using Janelia;
+using System.Text.RegularExpressions;
 
 
 public class CueManager : MonoBehaviour
@@ -10,7 +11,7 @@ public class CueManager : MonoBehaviour
     [Header("Configuración escena")]
     public GameObject paradigmScene;
 
-    public HapticGrabberHandCB hapticGrabberHand;
+    public HapticGrabberHand hapticGrabberHand;
     private bool rightHand = true;
     private bool mirrored = false;
 
@@ -58,7 +59,7 @@ public class CueManager : MonoBehaviour
     private bool startSphereTouch = false;
     GameObject startSphere;
 
-    public bool endTrial = false;
+    private bool endTrial = false;
 
     private bool pegEntered = false; // Booleano que se vuelve true al insertar un peg, terminando el turno
 
@@ -73,7 +74,7 @@ public class CueManager : MonoBehaviour
     private bool[] holesEntered = {false, false, false,
                                 false, false, false,
                                 false, false, false }; // Array de bools que permite encontrar cuáles agujeros ya tuvieron su turno
-    [HideInInspector] public bool pegDeactivate = true;
+    private bool pegDeactivate = true;
     private bool pegActivated = false;
 
     private bool isCamRec; // Opción cámara
@@ -115,6 +116,10 @@ public class CueManager : MonoBehaviour
         isSerialConnection = PlayerPrefs.GetInt("SerialConnection", 1) == 1;
 
         rightHand = PlayerPrefs.GetInt("RightHand_NHPT", 1) == 1;
+
+        // Eventos
+        hapticGrabberHand.onPegGrab.AddListener(PegGrabEvent);
+        hapticGrabberHand.onPegRelease.AddListener(PegReleaseEvent);
 
         // Guarda posiciones y rotaciones iniciales de los pegs
         PegPosition = new Vector3[Pegs.Length];
@@ -349,9 +354,27 @@ public class CueManager : MonoBehaviour
         holeNumber = holeOrder[pegIndex];
     }
 
+    void PegGrabEvent(string peg)
+    {
+        string resultString = Regex.Match(peg, @"\d+").Value;
+        int pegGrabbed = int.Parse(resultString);
+
+        fileManager.StorePeg(pegGrabbed);
+        fileManager.StoreGrabMoment();
+    }
+
+    void PegReleaseEvent()
+    {
+        if (!pegDeactivate && endTrial)
+        {
+            DeactivatePeg();
+        }
+        fileManager.StoreGrabMoment(0);
+    }
+
     void PegEnter(Collider col) // Método llamado al producirse un evento de entrada de peg
     {
-        //Debug.Log("Peg in"); // Mensaje por consola
+        fileManager.StoreHole(holeNumber - 1);
         pegEntered = true; // Setea pegEntered en true, lo que terminará el turno
         PHCollisionEvents[holeNumber - 1].onTriggerEnter.RemoveListener(PegEnter); // Se desvincula del evento del agujero usado
     }
@@ -401,11 +424,6 @@ public class CueManager : MonoBehaviour
             PegRotation[ii] = Pegs[ii].transform.rotation;
         }
 
-    }
-
-    public void PegGrabEvent()
-    {
-        fileManager.StoreGrabMoment();
     }
 
     IEnumerator TriggerPulseWidth()

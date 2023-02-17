@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine;
 using Janelia;
+using System.Text.RegularExpressions;
 
 
 public class PaceManager : MonoBehaviour
@@ -10,7 +11,7 @@ public class PaceManager : MonoBehaviour
     [Header("Configuración escena")]
     public GameObject paradigmScene;
 
-    public HapticGrabberHandSP hapticGrabberHand;
+    public HapticGrabberHand hapticGrabberHand;
     private bool rightHand = true;
     private bool mirrored = false;
 
@@ -88,6 +89,7 @@ public class PaceManager : MonoBehaviour
 
         // Eventos
         hapticGrabberHand.onPegGrab.AddListener(PegGrabEvent);
+        hapticGrabberHand.onPegRelease.AddListener(PegReleaseEvent);
 
         // Guarda posiciones y rotaciones iniciales de los pegs
         PegPosition = new Vector3[Pegs.Length];
@@ -155,12 +157,12 @@ public class PaceManager : MonoBehaviour
         {
             if (!holeActivated)
             {
-                HoleBases[holeNumber - 1].SetActive(true); // Activa el peg fantasma de un agujero
+                HoleBases[holeNumber - 1].SetActive(true);
                 holeActivated = true;
             }
             if (pegEntered)
             {
-                HoleBases[holeNumber - 1].SetActive(false); // Desactiva el peg fantasma
+                HoleBases[holeNumber - 1].SetActive(false);
 
                 fileManager.StoreTrialOutcome(1);
 
@@ -231,15 +233,26 @@ public class PaceManager : MonoBehaviour
         }
     }
 
-    void PegGrabEvent()
+    void PegGrabEvent(string peg)
     {
-        Debug.Log("evento peg grab");
+        RunNITrigger(1, lines);
+
+        string resultString = Regex.Match(peg, @"\d+").Value;
+        int pegGrabbed = int.Parse(resultString);
+
+        fileManager.StorePeg(pegGrabbed);
         fileManager.StoreGrabMoment();
     }
 
+    void PegReleaseEvent()
+    {
+        fileManager.StoreGrabMoment(0);
+    }
+    
     void PegEnter(Collider col) // Método llamado al producirse un evento de entrada de peg
     {
-        RunNITrigger(1, lines);
+        RunNITrigger(2, lines);
+        fileManager.StoreHole(holeNumber - 1);
         pegEntered = true; // Setea pegEntered en true, lo que terminará el turno
         PHCollisionEvents[holeNumber - 1].onTriggerEnter.RemoveListener(PegEnter); // Se desvincula del evento del agujero usado
     }
