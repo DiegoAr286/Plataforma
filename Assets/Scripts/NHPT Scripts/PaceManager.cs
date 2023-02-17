@@ -18,7 +18,7 @@ public class PaceManager : MonoBehaviour
     public VideoRecord videoRecorder;
 
     [Header("Conexión Serie")]
-    public SerialConnection serialConnector;
+    public GameObject serialController;
 
     [Header("Almacenamiento de datos")]
     public FileManager fileManager;
@@ -84,7 +84,10 @@ public class PaceManager : MonoBehaviour
 
         isSerialConnection = PlayerPrefs.GetInt("SerialConnection", 1) == 1;
 
-        rightHand = PlayerPrefs.GetInt("RightHand_NHPT", 0) == 1;
+        rightHand = PlayerPrefs.GetInt("RightHand_NHPT", 1) == 1;
+
+        // Eventos
+        hapticGrabberHand.onPegGrab.AddListener(PegGrabEvent);
 
         // Guarda posiciones y rotaciones iniciales de los pegs
         PegPosition = new Vector3[Pegs.Length];
@@ -104,6 +107,11 @@ public class PaceManager : MonoBehaviour
 
         if (isCamRec || isAnalogAcquisition)
             StartCoroutine(AcquisitionStart());
+
+        if (isSerialConnection)
+        {
+            serialController.SetActive(true);
+        }
 
         if (isAnalogAcquisition)
         {
@@ -143,19 +151,14 @@ public class PaceManager : MonoBehaviour
 
         currentTime += Time.deltaTime; // Aumenta el tiempo en intervalos deltaTime, que es el tiempo entre frames
 
-        if (isSerialConnection)
-        {
-            fileManager.StoreAngleData(serialConnector.GetAngle());
-        }
-
         if (numberPegsEntered < totalPegsEntered) // Verifica que el número de turnos no sea mayor al total
         {
-            if (!holeActivated) // Current time raramente toma un valor entero, entonces se define una diferencia máxima
+            if (!holeActivated)
             {
                 HoleBases[holeNumber - 1].SetActive(true); // Activa el peg fantasma de un agujero
                 holeActivated = true;
             }
-            if (pegEntered) // Current time raramente toma un valor entero, entonces se define una diferencia máxima
+            if (pegEntered)
             {
                 HoleBases[holeNumber - 1].SetActive(false); // Desactiva el peg fantasma
 
@@ -172,7 +175,6 @@ public class PaceManager : MonoBehaviour
                     holeNumber++;
                 }
             }
-
         }
         else
         {
@@ -180,10 +182,6 @@ public class PaceManager : MonoBehaviour
             {
                 videoRecorder.StopVideoCapture();
                 cameraRecording = false;
-            }
-            if (isSerialConnection)
-            {
-                serialConnector.SerialCloseConnection();
             }
             if (!writtenData)
             {
@@ -218,11 +216,6 @@ public class PaceManager : MonoBehaviour
             // Se marca el inicio de la tarea
             writeStatePort2 = RunNITriggerTestPort2(0);
         }
-
-        if (isSerialConnection)
-        {
-            serialConnector.SerialStartConnection();
-        }
     }
 
     public void ResetPegs() // Método que regresa los pegs a su posición inicial
@@ -238,8 +231,15 @@ public class PaceManager : MonoBehaviour
         }
     }
 
+    void PegGrabEvent()
+    {
+        Debug.Log("evento peg grab");
+        fileManager.StoreGrabMoment();
+    }
+
     void PegEnter(Collider col) // Método llamado al producirse un evento de entrada de peg
     {
+        RunNITrigger(1, lines);
         pegEntered = true; // Setea pegEntered en true, lo que terminará el turno
         PHCollisionEvents[holeNumber - 1].onTriggerEnter.RemoveListener(PegEnter); // Se desvincula del evento del agujero usado
     }

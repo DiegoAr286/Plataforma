@@ -17,6 +17,9 @@ public class CueManager : MonoBehaviour
     [Header("Grabación de cámara")]
     public VideoRecord videoRecorder;
 
+    [Header("Conexión Serie")]
+    public GameObject serialController;
+
     [Header("Almacenamiento de datos")]
     public FileManager fileManager;
     private bool writtenData = false;
@@ -77,6 +80,8 @@ public class CueManager : MonoBehaviour
 
     private bool cameraRecording = false;
 
+    private bool isSerialConnection = false;
+
     // NI link
     NiDaqMx.DigitalOutputParams[] digitalOutputParams; // Parámetros NI
     private bool writeState = false;
@@ -106,7 +111,10 @@ public class CueManager : MonoBehaviour
         isCamRec = PlayerPrefs.GetInt("CameraRec", 1) == 1; // if true
 
         isAnalogAcquisition = PlayerPrefs.GetInt("AnalogAcquisition", 1) == 1; // if true
-        rightHand = PlayerPrefs.GetInt("RightHand_NHPTcb", 1) == 1;
+
+        isSerialConnection = PlayerPrefs.GetInt("SerialConnection", 1) == 1;
+
+        rightHand = PlayerPrefs.GetInt("RightHand_NHPT", 1) == 1;
 
         // Guarda posiciones y rotaciones iniciales de los pegs
         PegPosition = new Vector3[Pegs.Length];
@@ -135,6 +143,11 @@ public class CueManager : MonoBehaviour
 
         if (isCamRec || isAnalogAcquisition)
             StartCoroutine(AcquisitionStart());
+
+        if (isSerialConnection)
+        {
+            serialController.SetActive(true);
+        }
 
         if (isAnalogAcquisition)
         {

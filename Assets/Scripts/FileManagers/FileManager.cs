@@ -15,6 +15,7 @@ public class FileManager : MonoBehaviour
     private List<float> timeVector;
 
     private List<string> angleData;
+    private List<float> angleTimeVector;
 
     private Dictionary<int, int> triggerVector;
 
@@ -37,7 +38,10 @@ public class FileManager : MonoBehaviour
         stylusPosition = new List<Vector3>();
         stylusVelocity = new List<Vector3>();
         timeVector = new List<float>();
+
         angleData = new List<string> ();
+        angleTimeVector = new List<float>();
+
         triggerVector = new Dictionary<int, int>();
         trialVector = new Dictionary<int, int>();
         grabVector = new Dictionary<int, int>();
@@ -61,6 +65,7 @@ public class FileManager : MonoBehaviour
     public void StoreAngleData(string angle)
     {
         angleData.Add(angle);
+        angleTimeVector.Add(currentTime);
     }
 
     public void StoreTrigger(int trigger)
@@ -80,11 +85,14 @@ public class FileManager : MonoBehaviour
 
     public void WriteData()
     {
-        File.WriteAllText(path, "Position_x,Position_y,Position_z,Velocity_x,Velocity_y,Velocity_z,Angle,Time,Trigger,Trial,Grab\n");
+        File.WriteAllText(path, "Position_x,Position_y,Position_z,Velocity_x,Velocity_y,Velocity_z,Time,Trigger,Trial,Grab,Angle,AngleTime\n");
 
         int trigger;
         int trial;
         int grab;
+
+        string angle;
+        float angleTime;
 
         CultureInfo cult = CultureInfo.InvariantCulture;
         for (int i = 0; i < stylusPosition.Count; i++)
@@ -104,11 +112,22 @@ public class FileManager : MonoBehaviour
             else
                 grab = -1;
 
+            if (angleData.Count > i)
+            {
+                angle = angleData[i];
+                angleTime = angleTimeVector[i];
+            }
+            else
+            {
+                angle = "null";
+                angleTime = -1;
+            }
 
-            File.AppendAllText(path, String.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}\n",
+
+            File.AppendAllText(path, String.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}\n",
                 stylusPosition[i].x.ToString(cult), stylusPosition[i].y.ToString(cult), stylusPosition[i].z.ToString(cult),
                 stylusVelocity[i].x.ToString(cult), stylusVelocity[i].y.ToString(cult), stylusVelocity[i].z.ToString(cult),
-                angleData[i], timeVector[i].ToString(cult), trigger.ToString(), trial.ToString(), grab.ToString()));
+                timeVector[i].ToString(cult), trigger.ToString(), trial.ToString(), grab.ToString(), angle, angleTime.ToString(cult)));
         }
     }
 }

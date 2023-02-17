@@ -20,12 +20,7 @@ public class ConfigMenu : MonoBehaviour
 
         PlayerPrefs.SetInt("SerialConnection", 1);
 
-        PlayerPrefs.SetInt("RightHand_NHPTcb", 0);
-        PlayerPrefs.SetInt("LeftHand_NHPTcb", 1);
-
-
-        PlayerPrefs.SetInt("RightHand_NHPTsp", 0);
-        PlayerPrefs.SetInt("LeftHand_NHPTsp", 1);
+        PlayerPrefs.SetInt("RightHand_NHPT", 0);
     }
 
 

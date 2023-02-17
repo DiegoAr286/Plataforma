@@ -14,22 +14,33 @@ public class SerialConnection : MonoBehaviour
     {
         if (connected)
         {
-            value = stream.ReadLine(); //Read the information
+            //StartCoroutine(GetSerialData());
         }
     }
 
     public void SerialStartConnection()
     {
-        Debug.Log(PlayerPrefs.GetString("COMNumber"));
         stream = new SerialPort(PlayerPrefs.GetString("COMNumber"), 9600);
         stream.Open();
         connected = true;
+
+        StartCoroutine(GetSerialData());
     }
 
     public void SerialCloseConnection()
     {
         stream.Close();
         connected = false;
+    }
+
+    IEnumerator GetSerialData()
+    {
+        while (connected)
+        {
+            value = stream.ReadLine(); //Read the information
+            //Debug.Log(value);
+            yield return new WaitForSeconds(.02f);
+        }
     }
 
     public string GetAngle()
