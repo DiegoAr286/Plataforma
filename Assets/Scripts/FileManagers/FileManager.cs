@@ -28,6 +28,8 @@ public class FileManager : MonoBehaviour
 
     private Dictionary<int, int> holeVector;
 
+    private int rightHand;
+
     //private int frameCounter = 0;
     [Range(0, 100)] public int frameCounterLimit = 0;
 
@@ -39,6 +41,8 @@ public class FileManager : MonoBehaviour
     void Start()
     {
         path = PlayerPrefs.GetString("Name");
+
+        rightHand = PlayerPrefs.GetInt("RightHand_NHPT");
 
         stylusPosition = new List<Vector3>();
         stylusVelocity = new List<Vector3>();
@@ -103,7 +107,7 @@ public class FileManager : MonoBehaviour
 
     public void WriteData()
     {
-        File.WriteAllText(path, "Position_x,Position_y,Position_z,Velocity_x,Velocity_y,Velocity_z,Time,Trigger,Trial,Grab,Angle,AngleTime,Peg,Hole\n");
+        File.WriteAllText(path, "Position_x,Position_y,Position_z,Velocity_x,Velocity_y,Velocity_z,Time,Trigger,Trial,Grab,Angle,AngleTime,Peg,Hole,RightHand\n");
 
         int trigger;
         int trial;
@@ -155,11 +159,11 @@ public class FileManager : MonoBehaviour
             }
 
 
-            File.AppendAllText(path, String.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13}\n",
+            File.AppendAllText(path, String.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14}\n",
                 stylusPosition[i].x.ToString(cult), stylusPosition[i].y.ToString(cult), stylusPosition[i].z.ToString(cult),
                 stylusVelocity[i].x.ToString(cult), stylusVelocity[i].y.ToString(cult), stylusVelocity[i].z.ToString(cult),
                 timeVector[i].ToString(cult), trigger.ToString(), trial.ToString(), grab.ToString(), angle, angleTime.ToString(cult),
-                pegVector.ToString(), holeVector.ToString()));
+                peg.ToString(), hole.ToString(), rightHand.ToString()));
         }
     }
 }

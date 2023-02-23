@@ -372,7 +372,7 @@ public class CueManager : MonoBehaviour
         fileManager.StoreGrabMoment(0);
     }
 
-    void PegEnter(Collider col) // Método llamado al producirse un evento de entrada de peg
+    void PegEnter(Collider col, string holeName) // Método llamado al producirse un evento de entrada de peg
     {
         fileManager.StoreHole(holeNumber - 1);
         pegEntered = true; // Setea pegEntered en true, lo que terminará el turno

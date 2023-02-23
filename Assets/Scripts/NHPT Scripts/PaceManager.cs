@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine;
 using Janelia;
 using System.Text.RegularExpressions;
+using System.Drawing;
 
 
 public class PaceManager : MonoBehaviour
@@ -102,7 +103,7 @@ public class PaceManager : MonoBehaviour
 
         for (int i = 0; i < HoleBases.Length; i++)
         {
-            HoleBases[i].SetActive(false); // Desactiva los pegs fantasma de los agujeros
+            HoleBases[i].GetComponent<MeshRenderer>().enabled = false; // Desactiva los pegs fantasma de los agujeros
 
             PHCollisionEvents[i].onTriggerEnter.AddListener(PegEnter); // Establece una conexión con los eventos de entrada de los pegs
         }
@@ -155,27 +156,16 @@ public class PaceManager : MonoBehaviour
 
         if (numberPegsEntered < totalPegsEntered) // Verifica que el número de turnos no sea mayor al total
         {
-            if (!holeActivated)
-            {
-                HoleBases[holeNumber - 1].SetActive(true);
-                holeActivated = true;
-            }
             if (pegEntered)
             {
-                HoleBases[holeNumber - 1].SetActive(false);
+                HoleBases[holeNumber].SetActive(false);
 
                 fileManager.StoreTrialOutcome(1);
 
                 numberPegsEntered++; // Suma uno a la cantidad de turnos
                 pegEntered = false; // Setea en falso para poder iniciar el turno siguiente
-                holeActivated = false;
 
-                holesEntered[holeNumber - 1] = true; // Agujero holeNumber-1 usado
-
-                if (numberPegsEntered < totalPegsEntered) // Verifica que el número de turnos no se mayor al número de pegs
-                {
-                    holeNumber++;
-                }
+                holesEntered[holeNumber] = true; // Agujero holeNumber usado
             }
         }
         else
@@ -235,13 +225,17 @@ public class PaceManager : MonoBehaviour
 
     void PegGrabEvent(string peg)
     {
-        RunNITrigger(1, lines);
+        if (peg.StartsWith("Peg"))
+        {
+            if (isAnalogAcquisition)
+                RunNITrigger(1, lines);
 
-        string resultString = Regex.Match(peg, @"\d+").Value;
-        int pegGrabbed = int.Parse(resultString);
+            string resultString = Regex.Match(peg, @"\d+").Value;
+            int pegGrabbed = int.Parse(resultString);
 
-        fileManager.StorePeg(pegGrabbed);
-        fileManager.StoreGrabMoment();
+            fileManager.StorePeg(pegGrabbed);
+            fileManager.StoreGrabMoment();
+        }
     }
 
     void PegReleaseEvent()
@@ -249,12 +243,15 @@ public class PaceManager : MonoBehaviour
         fileManager.StoreGrabMoment(0);
     }
     
-    void PegEnter(Collider col) // Método llamado al producirse un evento de entrada de peg
+    void PegEnter(Collider col, string holeName) // Método llamado al producirse un evento de entrada de peg
     {
         RunNITrigger(2, lines);
-        fileManager.StoreHole(holeNumber - 1);
+        string resultString = Regex.Match(holeName, @"\d+").Value;
+        holeNumber = int.Parse(resultString);
+        fileManager.StoreHole(holeNumber);
+
         pegEntered = true; // Setea pegEntered en true, lo que terminará el turno
-        PHCollisionEvents[holeNumber - 1].onTriggerEnter.RemoveListener(PegEnter); // Se desvincula del evento del agujero usado
+        PHCollisionEvents[holeNumber].onTriggerEnter.RemoveListener(PegEnter); // Se desvincula del evento del agujero usado
     }
 
     void DisablePegPlaneCollisions()
