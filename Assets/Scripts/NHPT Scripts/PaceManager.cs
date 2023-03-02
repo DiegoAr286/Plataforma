@@ -4,7 +4,6 @@ using UnityEngine.SceneManagement;
 using UnityEngine;
 using Janelia;
 using System.Text.RegularExpressions;
-using System.Drawing;
 
 
 public class PaceManager : MonoBehaviour
@@ -31,7 +30,7 @@ public class PaceManager : MonoBehaviour
     private Vector3[] PegPosition; // Contiene las posiciones iniciales de los pegs
     private Quaternion[] PegRotation; // Contiene las rotaciones iniciales de los pegs
 
-    [HideInInspector] public float currentTime = 0; // Tiempo que pasó desde que comienza el turno de mover un peg, en segundos
+    private float currentTime = 0; // Tiempo que pasó desde que comienza el turno de mover un peg, en segundos
     //[HideInInspector] public float totalCurrentTime = 0; // Tiempo que pasó desde el comienzo de la prueba
 
     public int totalPegsEntered = 9;
