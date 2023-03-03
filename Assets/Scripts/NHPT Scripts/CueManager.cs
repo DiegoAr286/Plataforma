@@ -18,6 +18,9 @@ public class CueManager : MonoBehaviour
     [Header("Grabación de cámara")]
     public VideoRecord videoRecorder;
 
+    [Header("Conexión DAQ")]
+    public DaqConnection daqConnector;
+
     [Header("Conexión Serie")]
     public GameObject serialController;
 
@@ -83,18 +86,10 @@ public class CueManager : MonoBehaviour
 
     private bool isSerialConnection = false;
 
-    // NI link
-    NiDaqMx.DigitalOutputParams[] digitalOutputParams; // Parámetros NI
-    private bool writeState = false;
-    private int numWritten = 0;
-    private int lines = 7; // Líneas digitales a escribir
-
-    NiDaqMx.DigitalOutputParams digitalOutputParamPort2; // Parámetros NI
-    private bool writeStatePort2 = false;
-
-    //private bool toggleDig = true;
-
     private bool isAnalogAcquisition = true; // Opción adquisición
+
+    private bool writeState = false;
+
 
     // Start is called before the first frame update
     void Start()
@@ -154,18 +149,6 @@ public class CueManager : MonoBehaviour
             serialController.SetActive(true);
         }
 
-        if (isAnalogAcquisition)
-        {
-            // Inicializa variables NI
-            digitalOutputParams = new NiDaqMx.DigitalOutputParams[8];
-            for (int i = 0; i < 8; i++)
-            {
-                digitalOutputParams[i] = new NiDaqMx.DigitalOutputParams();
-                _ = NiDaqMx.CreateDigitalOutput(digitalOutputParams[i], false, i);
-            }
-            writeState = RunNITrigger(0, lines);
-        }
-
         MirrorScene();
     }
 
@@ -174,42 +157,10 @@ public class CueManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (isAnalogAcquisition)
-            {
-                for (int i = 0; i < 8; i++)
-                    NiDaqMx.ClearOutputTask(digitalOutputParams[i]);
+            daqConnector.EndConnection();
 
-                writeStatePort2 = RunNITriggerTestPort2(1);
-                NiDaqMx.ClearOutputTask(digitalOutputParamPort2);
-            }
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1); // Salir del test al menú inicial
         }
-
-
-        //// Al presionar espacio regresa los pegs a su posición inicial
-        //if (Input.GetKeyDown(KeyCode.Space))
-        //{
-        //    //ResetPegs();
-        //    if (toggleDig)
-        //    {
-        //        //writeState = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 0, 0, 0, 0, 0, 0, 0, 0 }, ref numWritten);
-        //        writeState = RunNITrigger(2);
-
-        //        toggleDig = false;
-        //        Debug.Log(writeState);
-        //    }
-        //    else
-        //    {
-        //        //writeState = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 1, 1, 1, 1, 1, 1, 1, 1 }, ref numWritten);
-        //        writeState = RunNITrigger(1);
-
-        //        toggleDig = true;
-        //        Debug.Log(writeState);
-        //    }
-        //    //writeState = RunNITrigger(1);
-
-        //    return;
-        //}
 
         if (Input.GetKeyDown(KeyCode.S))
             MirrorScene();
@@ -253,7 +204,7 @@ public class CueManager : MonoBehaviour
                 if (isAnalogAcquisition)
                 {
                     // Se marca el fin de la tarea
-                    writeStatePort2 = RunNITriggerTestPort2(1);
+                    RunNITriggerTestPort2(1);
                 }
 
                 writtenData = true;
@@ -273,11 +224,10 @@ public class CueManager : MonoBehaviour
 
         if (isAnalogAcquisition)
         {
-            digitalOutputParamPort2 = new NiDaqMx.DigitalOutputParams();
-            _ = NiDaqMx.CreateDigitalOutput(digitalOutputParamPort2, port: 1);
+            daqConnector.NiPort2OutputInitialize();
 
             // Se marca el inicio de la tarea
-            writeStatePort2 = RunNITriggerTestPort2(0);
+            RunNITriggerTestPort2(0);
         }
 
     }
@@ -304,7 +254,7 @@ public class CueManager : MonoBehaviour
         if (isAnalogAcquisition)
         {
             // Trigger 1
-            writeState = RunNITrigger(1, lines);
+            writeState = RunNITrigger(1);
         }
     }
 
@@ -323,7 +273,7 @@ public class CueManager : MonoBehaviour
 
         if (isAnalogAcquisition)
         {
-            writeState = RunNITrigger(2, lines);
+            writeState = RunNITrigger(2);
         }
 
         if (pegEntered)
@@ -431,10 +381,10 @@ public class CueManager : MonoBehaviour
         yield return new WaitForSecondsRealtime((float)0.01);
 
         if (writeState)
-            writeState = RunNITrigger(0, lines);
+            writeState = RunNITrigger(0);
     }
 
-    public bool RunNITrigger(int trigger, int lines)
+    public bool RunNITrigger(int trigger)
     {
         bool status = false;
         uint[] message = { 1 };
@@ -473,9 +423,7 @@ public class CueManager : MonoBehaviour
                 break;
         }
 
-        for (int i = 0; i < lines; i++)
-            status = NiDaqMx.WriteDigitalValue(digitalOutputParams[i], new uint[] { message[i] }, ref numWritten);
-
+        writeState = daqConnector.WriteDigitalValue(message, port: 0);
         
         if (trigger != 0)
         {
@@ -488,19 +436,20 @@ public class CueManager : MonoBehaviour
     public bool RunNITriggerTestPort2(int trigger)
     {
         bool status = false;
-        uint message = 0;
+        uint[] message = { 0 };
         switch (trigger)
         {
             case 0:
-                message = 0;
+                message[0] = 0;
                 status = false;
                 break;
             case 1:
-                message = 1;
+                message[0] = 1;
                 break;
         }
 
-        status = NiDaqMx.WriteDigitalValue(digitalOutputParamPort2, new uint[] { message }, ref numWritten);
+        daqConnector.WriteDigitalValue(message, port: 2);
+
         fileManager.StoreTrigger(trigger + 10);
         return status;
     }
