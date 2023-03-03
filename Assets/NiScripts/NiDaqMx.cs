@@ -423,22 +423,8 @@ namespace Janelia
         public class DigitalOutputParams
         {
             public string deviceName = "Dev1";
-            //public string DeviceName
-            //{
-            //    get => deviceName;
-            //    set { Restrict(); deviceName = value; }
-            //}
-
-            //internal bool inUse = false;
-            //internal void Restrict()
-            //{
-            //    if (inUse)
-            //    {
-            //        throw new MemberAccessException("Janelia.NiDaqMx.OutpuParams are in use and cannot be changed");
-            //    }
-            //}
-
         }
+
         public static bool CreateDigitalOutput(DigitalOutputParams p, bool allLines = true, int line = 0, int port = 0)
         {
             ulong taskHandle = (ulong)line;
@@ -512,6 +498,18 @@ namespace Janelia
 
 
         // ================================================================================================================== //
+
+        public static bool CheckInit()
+        {
+            int line = 0;
+            string deviceName = "Dev1";
+            ulong taskHandle = (ulong)line;
+            if (!Init(deviceName, ref taskHandle))
+            {
+                return false;
+            }
+            return true;
+        }
 
         // ================================================================================================================== //
         // Digital input

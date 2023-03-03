@@ -18,6 +18,9 @@ public class PaceManager : MonoBehaviour
     [Header("Grabación de cámara")]
     public VideoRecord videoRecorder;
 
+    [Header("Conexión DAQ")]
+    public DaqConnection daqConnector;
+
     [Header("Conexión Serie")]
     public GameObject serialController;
 
@@ -51,8 +54,6 @@ public class PaceManager : MonoBehaviour
                                 false, false, false,
                                 false, false, false }; // Array de bools que permite encontrar cuáles agujeros ya tuvieron su turno
 
-    private bool holeActivated = false;
-
 
     private bool isCamRec; // Opción cámara
 
@@ -60,17 +61,10 @@ public class PaceManager : MonoBehaviour
 
     private bool isSerialConnection = false;
 
-    // NI link
-    NiDaqMx.DigitalOutputParams[] digitalOutputParams; // Parámetros NI
-    private bool writeState = false;
-    private int numWritten = 0;
-    private int lines = 7; // Líneas digitales a escribir
-
-    NiDaqMx.DigitalOutputParams digitalOutputParamPort2; // Parámetros NI
-    private bool writeStatePort2 = false;
-
-
     private bool isAnalogAcquisition; // Opción adquisición
+
+    private bool writeState = false;
+
 
     // Start is called before the first frame update
     void Start()
@@ -115,17 +109,6 @@ public class PaceManager : MonoBehaviour
             serialController.SetActive(true);
         }
 
-        if (isAnalogAcquisition)
-        {
-            // Inicializa variables NI
-            digitalOutputParams = new NiDaqMx.DigitalOutputParams[8];
-            for (int i = 0; i < 8; i++)
-            {
-                digitalOutputParams[i] = new NiDaqMx.DigitalOutputParams();
-                _ = NiDaqMx.CreateDigitalOutput(digitalOutputParams[i], false, i);
-            }
-            writeState = RunNITrigger(0, lines);
-        }
 
         MirrorScene();
     }
@@ -135,17 +118,9 @@ public class PaceManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (isAnalogAcquisition)
-            {
-                for (int i = 0; i < 8; i++)
-                    NiDaqMx.ClearOutputTask(digitalOutputParams[i]);
-
-                writeStatePort2 = RunNITriggerTestPort2(1);
-                NiDaqMx.ClearOutputTask(digitalOutputParamPort2);
-            }
+            daqConnector.EndConnection();
 
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 2); // Salir del test al menú inicial
-
         }
 
         if (Input.GetKeyDown("s"))
@@ -181,7 +156,7 @@ public class PaceManager : MonoBehaviour
                 if (isAnalogAcquisition)
                 {
                     // Se marca el fin de la tarea
-                    writeStatePort2 = RunNITriggerTestPort2(1);
+                    RunNITriggerTestPort2(1);
                 }
 
                 writtenData = true;
@@ -201,11 +176,10 @@ public class PaceManager : MonoBehaviour
 
         if (isAnalogAcquisition)
         {
-            digitalOutputParamPort2 = new NiDaqMx.DigitalOutputParams();
-            _ = NiDaqMx.CreateDigitalOutput(digitalOutputParamPort2, port: 1);
+            daqConnector.NiPort2OutputInitialize();
 
             // Se marca el inicio de la tarea
-            writeStatePort2 = RunNITriggerTestPort2(0);
+            RunNITriggerTestPort2(0);
         }
     }
 
@@ -227,7 +201,7 @@ public class PaceManager : MonoBehaviour
         if (peg.StartsWith("Peg"))
         {
             if (isAnalogAcquisition)
-                RunNITrigger(1, lines);
+                RunNITrigger(1);
 
             string resultString = Regex.Match(peg, @"\d+").Value;
             int pegGrabbed = int.Parse(resultString);
@@ -244,7 +218,7 @@ public class PaceManager : MonoBehaviour
     
     void PegEnter(Collider col, string holeName) // Método llamado al producirse un evento de entrada de peg
     {
-        RunNITrigger(2, lines);
+        RunNITrigger(2);
         string resultString = Regex.Match(holeName, @"\d+").Value;
         holeNumber = int.Parse(resultString);
         fileManager.StoreHole(holeNumber);
@@ -302,10 +276,10 @@ public class PaceManager : MonoBehaviour
         yield return new WaitForSecondsRealtime((float)0.01);
 
         if (writeState)
-            writeState = RunNITrigger(0, lines);
+            writeState = RunNITrigger(0);
     }
 
-    public bool RunNITrigger(int trigger, int lines)
+    public bool RunNITrigger(int trigger)
     {
         bool status = false;
         uint[] message = { 1 };
@@ -316,7 +290,7 @@ public class PaceManager : MonoBehaviour
                 status = false;
                 break;
             case 1:
-                message = new uint[] { 0, 0, 0, 1, 1, 1, 1, 1 };
+                message = new uint[] { 0, 1, 1, 1, 1, 1, 1, 1 };
                 break;
             case 2:
                 message = new uint[] { 1, 0, 1, 1, 1, 1, 1, 1 };
@@ -344,10 +318,7 @@ public class PaceManager : MonoBehaviour
                 break;
         }
 
-        for (int i = 0; i < lines; i++)
-            status = NiDaqMx.WriteDigitalValue(digitalOutputParams[i], new uint[] { message[i] }, ref numWritten);
-
-
+        writeState = daqConnector.WriteDigitalValue(message, port: 0);
 
         if (trigger != 0)
         {
@@ -361,19 +332,19 @@ public class PaceManager : MonoBehaviour
     public bool RunNITriggerTestPort2(int trigger)
     {
         bool status = false;
-        uint message = 0;
+        uint[] message = { 0 };
         switch (trigger)
         {
             case 0:
-                message = 0;
+                message[0] = 0;
                 status = false;
                 break;
             case 1:
-                message = 1;
+                message[0] = 1;
                 break;
         }
 
-        status = NiDaqMx.WriteDigitalValue(digitalOutputParamPort2, new uint[] { message }, ref numWritten);
+        daqConnector.WriteDigitalValue(message, port: 2);
 
         fileManager.StoreTrigger(trigger+10);
         return status;

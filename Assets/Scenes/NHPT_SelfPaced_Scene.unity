@@ -1159,6 +1159,7 @@ MonoBehaviour:
   paradigmScene: {fileID: 1755338425}
   hapticGrabberHand: {fileID: 3027281866440716165}
   videoRecorder: {fileID: 674544763}
+  daqConnector: {fileID: 1879220364}
   serialController: {fileID: 1509563465617062508}
   fileManager: {fileID: 1578477048}
   Pegs:
@@ -1171,7 +1172,6 @@ MonoBehaviour:
   - {fileID: 759993150}
   - {fileID: 1427683520}
   - {fileID: 1793948840}
-  currentTime: 0
   totalPegsEntered: 9
   HoleBases:
   - {fileID: 77849972}
@@ -1936,6 +1936,50 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2307560af17f8c64dba01b84045f565f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &1879220363
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1879220365}
+  - component: {fileID: 1879220364}
+  m_Layer: 0
+  m_Name: DaqConnection
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1879220364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1879220363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a6d0dae998049e45990b97f29f90ecc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &1879220365
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1879220363}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 362.80945, y: 333.5757, z: -406.82486}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1894471989
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2608,7 +2652,7 @@ Transform:
   m_Children:
   - {fileID: 260109940}
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1509563465628145290
 MonoBehaviour:
