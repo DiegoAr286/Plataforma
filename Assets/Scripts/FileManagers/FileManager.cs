@@ -82,26 +82,36 @@ public class FileManager : MonoBehaviour
 
     public void StoreTrigger(int trigger)
     {
+        if (triggerVector.ContainsKey(stylusPosition.Count - 1))
+            return;
         triggerVector.Add(stylusPosition.Count - 1, trigger);
     }
 
     public void StoreTrialOutcome(int trial)
     {
+        if (trialVector.ContainsKey(stylusPosition.Count - 1))
+            return;
         trialVector.Add(stylusPosition.Count - 1, trial);
     }
 
     public void StoreGrabMoment(int grab = 1)
     {
+        if (grabVector.ContainsKey(stylusPosition.Count - 1))
+            return;
         grabVector.Add(stylusPosition.Count - 1, grab);
     }
 
     public void StorePeg(int peg)
     {
+        if (pegVector.ContainsKey(stylusPosition.Count - 1))
+            return;
         pegVector.Add(stylusPosition.Count - 1, peg);
     }
 
     public void StoreHole(int hole)
     {
+        if (holeVector.ContainsKey(stylusPosition.Count - 1))
+            return;
         holeVector.Add(stylusPosition.Count - 1, hole);
     }
 
