@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine;
-using Janelia;
 using System.Text.RegularExpressions;
 
 
@@ -49,7 +48,7 @@ public class PaceManager : MonoBehaviour
     private bool pegEntered = false; // Booleano que se vuelve true al insertar un peg, terminando el turno
 
     private int numberPegsEntered = 0; // Variable que cuenta la cantidad de pegs ingresados
-    
+
     private bool[] holesEntered = {false, false, false,
                                 false, false, false,
                                 false, false, false }; // Array de bools que permite encontrar cuáles agujeros ya tuvieron su turno
@@ -118,6 +117,8 @@ public class PaceManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
+            RunTrigger(8, endPulse: true);
+
             daqConnector.EndConnection();
 
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 2); // Salir del test al menú inicial
@@ -156,7 +157,7 @@ public class PaceManager : MonoBehaviour
                 if (isAnalogAcquisition)
                 {
                     // Se marca el fin de la tarea
-                    RunNITriggerTestPort2(1);
+                    RunTrigger(8, endPulse: true);
                 }
 
                 writtenData = true;
@@ -175,12 +176,7 @@ public class PaceManager : MonoBehaviour
         yield return new WaitForSeconds((float)3);
 
         if (isAnalogAcquisition)
-        {
-            daqConnector.NiPort2OutputInitialize();
-
-            // Se marca el inicio de la tarea
-            RunNITriggerTestPort2(0);
-        }
+            RunTrigger(8); // Se marca el inicio de la tarea
     }
 
     public void ResetPegs() // Método que regresa los pegs a su posición inicial
@@ -201,7 +197,7 @@ public class PaceManager : MonoBehaviour
         if (peg.StartsWith("Peg"))
         {
             if (isAnalogAcquisition)
-                RunNITrigger(1);
+                RunTrigger(1);
 
             string resultString = Regex.Match(peg, @"\d+").Value;
             int pegGrabbed = int.Parse(resultString);
@@ -215,10 +211,10 @@ public class PaceManager : MonoBehaviour
     {
         fileManager.StoreGrabMoment(0);
     }
-    
+
     void PegEnter(Collider col, string holeName) // Método llamado al producirse un evento de entrada de peg
     {
-        RunNITrigger(2);
+        RunTrigger(2);
         string resultString = Regex.Match(holeName, @"\d+").Value;
         holeNumber = int.Parse(resultString);
         fileManager.StoreHole(holeNumber);
@@ -271,15 +267,15 @@ public class PaceManager : MonoBehaviour
         }
     }
 
-    IEnumerator TriggerPulseWidth()
+    IEnumerator TriggerPulseWidth(int trigger)
     {
         yield return new WaitForSecondsRealtime((float)0.01);
 
         if (writeState)
-            writeState = RunNITrigger(0);
+            writeState = RunTrigger(trigger, endPulse: true);
     }
 
-    public bool RunNITrigger(int trigger)
+    public bool RunTrigger(int trigger, bool endPulse = false)
     {
         bool status = false;
         uint[] message = { 1 };
@@ -318,35 +314,38 @@ public class PaceManager : MonoBehaviour
                 break;
         }
 
-        writeState = daqConnector.WriteDigitalValue(message, port: 0);
+        writeState = daqConnector.WriteDigitalValue(message, endPulse, port: 0);
 
-        if (trigger != 0)
+        if (trigger != 0 && trigger != 8)
         {
             fileManager.StoreTrigger(trigger);
-            StartCoroutine(TriggerPulseWidth());
+            StartCoroutine(TriggerPulseWidth(trigger));
         }
+
+        if (trigger == 8)
+            fileManager.StoreTrigger(trigger + 10);
 
         return status;
     }
 
-    public bool RunNITriggerTestPort2(int trigger)
-    {
-        bool status = false;
-        uint[] message = { 0 };
-        switch (trigger)
-        {
-            case 0:
-                message[0] = 0;
-                status = false;
-                break;
-            case 1:
-                message[0] = 1;
-                break;
-        }
+    //public bool RunNITriggerTestPort2(int trigger)
+    //{
+    //    bool status = false;
+    //    uint[] message = { 0 };
+    //    switch (trigger)
+    //    {
+    //        case 0:
+    //            message[0] = 0;
+    //            status = false;
+    //            break;
+    //        case 1:
+    //            message[0] = 1;
+    //            break;
+    //    }
 
-        daqConnector.WriteDigitalValue(message, port: 2);
+    //    //daqConnector.WriteDigitalValue(message, port: 2);
 
-        fileManager.StoreTrigger(trigger+10);
-        return status;
-    }
+    //    fileManager.StoreTrigger(trigger+10);
+    //    return status;
+    //}
 }

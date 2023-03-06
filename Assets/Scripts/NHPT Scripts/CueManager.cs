@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine;
-using Janelia;
 using System.Text.RegularExpressions;
 
 
@@ -157,6 +156,8 @@ public class CueManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
+            RunTrigger(8, endPulse: true);
+
             daqConnector.EndConnection();
 
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1); // Salir del test al menú inicial
@@ -204,7 +205,7 @@ public class CueManager : MonoBehaviour
                 if (isAnalogAcquisition)
                 {
                     // Se marca el fin de la tarea
-                    RunNITriggerTestPort2(1);
+                    RunTrigger(8, endPulse: true);
                 }
 
                 writtenData = true;
@@ -223,13 +224,7 @@ public class CueManager : MonoBehaviour
         }
 
         if (isAnalogAcquisition)
-        {
-            daqConnector.NiPort2OutputInitialize();
-
-            // Se marca el inicio de la tarea
-            RunNITriggerTestPort2(0);
-        }
-
+            RunTrigger(8); // Se marca el inicio de la tarea
     }
 
     public void ResetPegs() // Método que regresa los pegs a su posición inicial
@@ -254,7 +249,7 @@ public class CueManager : MonoBehaviour
         if (isAnalogAcquisition)
         {
             // Trigger 1
-            writeState = RunNITrigger(1);
+            writeState = RunTrigger(1);
         }
     }
 
@@ -273,7 +268,7 @@ public class CueManager : MonoBehaviour
 
         if (isAnalogAcquisition)
         {
-            writeState = RunNITrigger(2);
+            writeState = RunTrigger(2);
         }
 
         if (pegEntered)
@@ -376,15 +371,15 @@ public class CueManager : MonoBehaviour
 
     }
 
-    IEnumerator TriggerPulseWidth()
+    IEnumerator TriggerPulseWidth(int trigger)
     {
         yield return new WaitForSecondsRealtime((float)0.01);
 
         if (writeState)
-            writeState = RunNITrigger(0);
+            writeState = RunTrigger(trigger, endPulse: true);
     }
 
-    public bool RunNITrigger(int trigger)
+    public bool RunTrigger(int trigger, bool endPulse = false)
     {
         bool status = false;
         uint[] message = { 1 };
@@ -423,36 +418,39 @@ public class CueManager : MonoBehaviour
                 break;
         }
 
-        writeState = daqConnector.WriteDigitalValue(message, port: 0);
+        writeState = daqConnector.WriteDigitalValue(message, endPulse, port: 0);
         
-        if (trigger != 0)
+        if (trigger != 0 && trigger != 8)
         {
             fileManager.StoreTrigger(trigger);
-            StartCoroutine(TriggerPulseWidth());
+            StartCoroutine(TriggerPulseWidth(trigger));
         }
+
+        if (trigger == 8)
+            fileManager.StoreTrigger(trigger + 10);
 
         return status;
     }
-    public bool RunNITriggerTestPort2(int trigger)
-    {
-        bool status = false;
-        uint[] message = { 0 };
-        switch (trigger)
-        {
-            case 0:
-                message[0] = 0;
-                status = false;
-                break;
-            case 1:
-                message[0] = 1;
-                break;
-        }
+    //public bool RunNITriggerTestPort2(int trigger)
+    //{
+    //    bool status = false;
+    //    uint[] message = { 0 };
+    //    switch (trigger)
+    //    {
+    //        case 0:
+    //            message[0] = 0;
+    //            status = false;
+    //            break;
+    //        case 1:
+    //            message[0] = 1;
+    //            break;
+    //    }
 
-        daqConnector.WriteDigitalValue(message, port: 2);
+    //    //daqConnector.WriteDigitalValue(message, port: 2);
 
-        fileManager.StoreTrigger(trigger + 10);
-        return status;
-    }
+    //    fileManager.StoreTrigger(trigger + 10);
+    //    return status;
+    //}
 
     void StartSphereEvent(Collider col)
     {

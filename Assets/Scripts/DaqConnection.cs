@@ -1,7 +1,9 @@
 using Janelia;
 using OpenLayers.Base;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Remoting.Messaging;
 using System.Security.Cryptography;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.VersionControl;
@@ -16,11 +18,13 @@ public class DaqConnection : MonoBehaviour
     private NiDaqMx.DigitalOutputParams[] digitalOutputParams; // Parámetros NI
     private bool writeState = false;
     private int numWritten = 0;
-    private int lines = 7; // Líneas digitales a escribir
+    private int lines = 8; // Líneas digitales a escribir
 
     private NiDaqMx.DigitalOutputParams digitalOutputParamsPort2; // Parámetros NI
     private bool writeStatePort2 = false;
 
+    private uint[] allPinsUp = { 1, 1, 1, 1, 1, 1, 1, 1 };
+    private uint[] niMessage;
 
 
     // DT Link
@@ -30,7 +34,6 @@ public class DaqConnection : MonoBehaviour
 
     private int allUp = 255;
     private int dtMessage; // Todos los pines en alto
-    private int dtStoredMessage;
 
 
     // Start is called before the first frame update
@@ -54,28 +57,6 @@ public class DaqConnection : MonoBehaviour
             }
         }
 
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        //if (Input.GetKeyDown(KeyCode.A))
-        //{
-        //    DtWriteDigitalValue(new uint[] { 0, 1, 1, 1, 1, 1, 1, 1 }, 0);
-        //}
-        //if (Input.GetKeyDown(KeyCode.S))
-        //{
-        //    DtWriteDigitalValue(new uint[] { 1, 0, 1, 1, 1, 1, 1, 1 }, 0);
-        //}
-        //if (Input.GetKeyDown(KeyCode.D))
-        //{
-        //    DtWriteDigitalValue(new uint[] { 1, 1, 0, 1, 1, 1, 1, 1 }, 0);
-        //}
-
-        //if (Input.GetKeyDown(KeyCode.Space))
-        //{
-        //    dtMessage = allUp;
-        //}
     }
 
     public void EndConnection()
@@ -104,9 +85,10 @@ public class DaqConnection : MonoBehaviour
             _ = NiDaqMx.CreateDigitalOutput(digitalOutputParams[i], false, i);
         }
 
-        uint[] message = { 1, 1, 1, 1, 1, 1, 1, 1 };
+        niMessage = allPinsUp;
+
         for (int i = 0; i < lines; i++)
-            writeState = NiDaqMx.WriteDigitalValue(digitalOutputParams[i], new uint[] { message[i] }, ref numWritten);
+            writeState = NiDaqMx.WriteDigitalValue(digitalOutputParams[i], niMessage, ref numWritten);
     }
 
     private void NiPort0Clear()
@@ -119,8 +101,6 @@ public class DaqConnection : MonoBehaviour
     {
         digitalOutputParamsPort2 = new NiDaqMx.DigitalOutputParams();
         writeStatePort2 = NiDaqMx.CreateDigitalOutput(digitalOutputParamsPort2, port: 2);
-
-        //writeStatePort2 = NiDaqMx.WriteDigitalValue(digitalOutputParamsPort2, new uint[] { 0 }, ref numWritten);
     }
 
     private void NiPort2Clear()
@@ -132,7 +112,7 @@ public class DaqConnection : MonoBehaviour
     {
         devicemgr = DeviceMgr.Get();
         string[] names = devicemgr.GetDeviceNames();
-        
+
         if (names.Length > 0)
             return true;
         else
@@ -142,7 +122,6 @@ public class DaqConnection : MonoBehaviour
     private void DtOutputInitialize()
     {
         string[] names = devicemgr.GetDeviceNames();
-        Debug.Log(names[0]);
 
         device = devicemgr.GetDevice(names[0]);
         digitalOutputSubsystem = device.DigitalOutputSubsystem(0);
@@ -159,6 +138,77 @@ public class DaqConnection : MonoBehaviour
         device.Dispose();
     }
 
+    public bool WriteDigitalValue(uint[] message, bool endPulse, int port = 0)
+    {
+        if (niDaq)
+        {
+            return (NiWriteDigitalValue(message, endPulse, port));
+        }
+        else
+        {
+            return (DtWriteDigitalValue(message, endPulse, port));
+        }
+    }
+
+    private bool NiWriteDigitalValue(uint[] message, bool endPulse, int port)
+    {
+        bool writeResult = false;
+
+        InvertMessage(ref message);
+
+        uint sum;
+
+        if (endPulse == true)
+        {
+            for (int i = 0; i < message.Length; i++)
+            {
+                sum = niMessage[i] + message[i];
+                if (sum <= 1)
+                    niMessage[i] = sum;
+            }
+        }
+        else
+        {
+            for (int i = 0; i < message.Length; i++)
+            {
+                sum = niMessage[i] - message[i];
+                if (sum >= 0)
+                    niMessage[i] = sum;
+            }
+        }
+        for (int i = 0; i < lines; i++)
+            writeResult = NiDaqMx.WriteDigitalValue(digitalOutputParams[i], new uint[] { niMessage[i] }, ref numWritten);
+
+        return writeResult;
+    }
+
+    private void InvertMessage(ref uint[] message)
+    {
+        for (int i = 0; i < message.Length; i++)
+        {
+            if (message[i] == 0)
+                message[i] = 1;
+            else
+                message[i] = 0;
+        }
+    }
+
+    private bool DtWriteDigitalValue(uint[] message, bool endPulse, int port)
+    {
+        InvertMessage(ref message);
+
+        int intMessage = BinaryToInt(message);
+
+        if (endPulse == true)
+            dtMessage += intMessage;
+        else
+            dtMessage -= intMessage;
+
+        digitalOutputSubsystem.SetSingleValue(dtMessage);
+
+        return true;
+    }
+
     private int BinaryToInt(uint[] message)
     {
         int result = 0;
@@ -173,74 +223,7 @@ public class DaqConnection : MonoBehaviour
                     result += (int)Mathf.Pow(2, i);
             }
         }
-        
-        Debug.Log("Resultado final");
-        Debug.Log(allUp - result);
 
-        return allUp - result;
-    }
-
-    public bool WriteDigitalValue(uint[] message, int port = 0)
-    {
-        if (niDaq)
-        {
-            return(NiWriteDigitalValue(message, port));
-        }
-        else
-        {
-            return(DtWriteDigitalValue(message, port));
-        }
-    }
-
-    private bool NiWriteDigitalValue(uint[] message, int port)
-    {
-        bool writeResult = false;
-
-        if (port == 0)
-        {
-            for (int i = 0; i < lines; i++)
-                writeResult = NiDaqMx.WriteDigitalValue(digitalOutputParams[i], message, ref numWritten);
-        }
-
-        else
-            writeResult = NiDaqMx.WriteDigitalValue(digitalOutputParamsPort2, message, ref numWritten);
-
-        return writeResult;
-    }
-
-    private bool DtWriteDigitalValue(uint[] message, int port)
-    {
-        int intMessage = BinaryToInt(message);
-
-        if (port == 0)
-        {
-            if (intMessage == 0)
-                dtMessage += dtStoredMessage;
-            else
-            {
-                dtMessage -= intMessage;
-                dtStoredMessage = intMessage;
-            }
-
-            digitalOutputSubsystem.SetSingleValue(dtMessage);
-        }
-
-        else
-        {
-            if (intMessage == allUp)
-            {
-                dtMessage -= 128;
-                digitalOutputSubsystem.SetSingleValue(dtMessage); // Se baja el pin 7
-            }
-            else if (intMessage == allUp - 1)
-            {
-                dtMessage += 128;
-                digitalOutputSubsystem.SetSingleValue(dtMessage); // Se sube el pin 7
-            }
-        }
-        Debug.Log("Resultado escrito");
-        Debug.Log(dtMessage);
-
-        return true;
+        return result;
     }
 }
