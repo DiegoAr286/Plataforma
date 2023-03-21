@@ -111,7 +111,7 @@ public class MainMenu : MonoBehaviour
                 paradigmID = 5;
                 for (int i = 0; i < ConfigMenu.Length; i++)
                     ConfigMenu[i].SetActive(false);
-                ConfigMenu[2].SetActive(true);
+                ConfigMenu[1].SetActive(true);
                 break;
 
             case 6: // 6: Color Comparison Task
