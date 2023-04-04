@@ -156,15 +156,15 @@ public class NBackManager : MonoBehaviour
             {
                 _ = NiDaqMx.ReadFromDigitalInput(digitalInputParams, ref readDigitalData, ref numReadPerChannel, ref numBytesPerSamp);
 
-                if (fixedFrameCounter == 10) // 500 ms
+                if (fixedFrameCounter == 50) // 500 ms
                     DeactivateLetter();
 
-                if (fixedFrameCounter == 15) // 2.5 s, se suman a los 500 ms
+                if (fixedFrameCounter == 300) // 2.5 s, se suman a los 500 ms
                 {
                     fixedFrameCounter = 0;
                     ActivateLetter();
                 }
-                else if (fixedFrameCounter < 15)
+                else if (fixedFrameCounter < 300)
                     fixedFrameCounter++;
             }
             else
@@ -405,18 +405,6 @@ public class NBackManager : MonoBehaviour
                 break;
             case 5:
                 message = new uint[] { 0, 1, 0, 1, 0, 1, 1, 1 }; // Trial derecho y correcto
-                break;
-            case 6:
-                message = new uint[] { 1, 1, 1, 1, 1, 0, 1, 1 };
-                break;
-            case 7:
-                message = new uint[] { 1, 1, 1, 1, 1, 1, 0, 1 };
-                break;
-            case 8:
-                message = new uint[] { 1, 1, 1, 1, 1, 1, 1, 0 };
-                break;
-            case 9:
-                message = new uint[] { 0, 0, 0, 0, 0, 0, 0, 0 };
                 break;
         }
 
