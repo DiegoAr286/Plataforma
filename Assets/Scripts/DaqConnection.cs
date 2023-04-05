@@ -1,12 +1,5 @@
 using Janelia;
 using OpenLayers.Base;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.Remoting.Messaging;
-using System.Security.Cryptography;
-using UnityEditor.Experimental.GraphView;
-using UnityEditor.VersionControl;
 using UnityEngine;
 
 public class DaqConnection : MonoBehaviour
