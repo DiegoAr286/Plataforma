@@ -3052,7 +3052,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: All Files (.*)
+  m_Text: Todos (.*)
 --- !u!1 &1000012001667450
 GameObject:
   m_ObjectHideFlags: 0
@@ -3493,7 +3493,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: OK
+  m_Text: Aceptar
 --- !u!1 &1000012351584372
 GameObject:
   m_ObjectHideFlags: 0
@@ -5519,7 +5519,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Select All
+  m_Text: Seleccionar todo
 --- !u!114 &114975456595458294
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5872,7 +5872,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Delete
+  m_Text: Eliminar
 --- !u!114 &114906565208794506
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6205,7 +6205,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: These file(s) already exist. Do you want to replace them?
+  m_Text: "Este archivo ya existe. \xBFDesea reemplazarlo?"
 --- !u!1 &1167292262143336
 GameObject:
   m_ObjectHideFlags: 0
@@ -9512,7 +9512,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: OK
+  m_Text: Aceptar
 --- !u!1 &1783948981068786
 GameObject:
   m_ObjectHideFlags: 0
@@ -10178,7 +10178,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Rename
+  m_Text: Renombrar
 --- !u!114 &114713076422221768
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10332,7 +10332,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: New Folder
+  m_Text: Nueva carpeta
 --- !u!114 &114108319543634614
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10754,7 +10754,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Deselect All
+  m_Text: Deseleccionar todo
 --- !u!114 &114790330541710592
 MonoBehaviour:
   m_ObjectHideFlags: 0

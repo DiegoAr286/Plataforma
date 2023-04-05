@@ -95,7 +95,7 @@ public class MainMenu : MonoBehaviour
                 paradigmID = 3;
                 for (int i = 0; i < ConfigMenu.Length; i++)
                     ConfigMenu[i].SetActive(false);
-                ConfigMenu[3].SetActive(true);
+                ConfigMenu[1].SetActive(true);
                 break;
 
             case 4: // 4: Stop Signal Task
@@ -108,14 +108,14 @@ public class MainMenu : MonoBehaviour
                 paradigmID = 5;
                 for (int i = 0; i < ConfigMenu.Length; i++)
                     ConfigMenu[i].SetActive(false);
-                ConfigMenu[1].SetActive(true);
+                ConfigMenu[2].SetActive(true);
                 break;
 
             case 6: // 6: Color Comparison Task
                 paradigmID = 6;
                 for (int i = 0; i < ConfigMenu.Length; i++)
                     ConfigMenu[i].SetActive(false);
-                ConfigMenu[1].SetActive(true);
+                ConfigMenu[2].SetActive(true);
                 break;
         }
     }
@@ -126,13 +126,18 @@ public class MainMenu : MonoBehaviour
 
         if (!training)
         {
-            FileBrowser.SetFilters(true, new FileBrowser.Filter("Text Files", ".txt"));
+            FileBrowser.SetFilters(true, new FileBrowser.Filter("Archivos de texto", ".txt"));
 
             yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.FilesAndFolders, false, null, "Archivo.txt", "Guardar archivo", "Guardar");
 
             if (FileBrowser.Success)
+            {
                 PlayerPrefs.SetString("Name", FileBrowser.Result[0]);
+                StartParadigm();
+            }
         }
-        StartParadigm();
+        else
+            StartParadigm();
+
     }
 }

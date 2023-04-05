@@ -272,7 +272,7 @@ namespace SimpleFileBrowser
 			}
 		}
 
-		private static string m_allFilesFilterText = "All Files (.*)";
+		private static string m_allFilesFilterText = "Todos (.*)";
 		public static string AllFilesFilterText
 		{
 			get { return m_allFilesFilterText; }
