@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine;
-using Janelia;
+using System.Text.RegularExpressions;
 
 
 public class PaceManager : MonoBehaviour
@@ -10,12 +10,18 @@ public class PaceManager : MonoBehaviour
     [Header("Configuración escena")]
     public GameObject paradigmScene;
 
-    public HapticGrabberHandSP hapticGrabberHand;
+    public HapticGrabberHand hapticGrabberHand;
     private bool rightHand = true;
     private bool mirrored = false;
 
     [Header("Grabación de cámara")]
     public VideoRecord videoRecorder;
+
+    [Header("Conexión DAQ")]
+    public DaqConnection daqConnector;
+
+    [Header("Conexión Serie")]
+    public GameObject serialController;
 
     [Header("Almacenamiento de datos")]
     public FileManager fileManager;
@@ -26,7 +32,7 @@ public class PaceManager : MonoBehaviour
     private Vector3[] PegPosition; // Contiene las posiciones iniciales de los pegs
     private Quaternion[] PegRotation; // Contiene las rotaciones iniciales de los pegs
 
-    [HideInInspector] public float currentTime = 0; // Tiempo que pasó desde que comienza el turno de mover un peg, en segundos
+    private float currentTime = 0; // Tiempo que pasó desde que comienza el turno de mover un peg, en segundos
     //[HideInInspector] public float totalCurrentTime = 0; // Tiempo que pasó desde el comienzo de la prueba
 
     public int totalPegsEntered = 9;
@@ -42,27 +48,22 @@ public class PaceManager : MonoBehaviour
     private bool pegEntered = false; // Booleano que se vuelve true al insertar un peg, terminando el turno
 
     private int numberPegsEntered = 0; // Variable que cuenta la cantidad de pegs ingresados
-    
+
     private bool[] holesEntered = {false, false, false,
                                 false, false, false,
                                 false, false, false }; // Array de bools que permite encontrar cuáles agujeros ya tuvieron su turno
-
-    private bool holeActivated = false;
 
 
     private bool isCamRec; // Opción cámara
 
     private bool cameraRecording = false;
 
-    // NI link
-    NiDaqMx.DigitalOutputParams[] digitalOutputParams; // Parámetros NI
-    private bool writeState = false;
-    private int numWritten = 0;
-    private int lines = 7; // Líneas digitales a escribir
-    //private int frameCounterNI = 0;
-    //private bool toggleDig = true;
+    private bool isSerialConnection = false;
 
     private bool isAnalogAcquisition; // Opción adquisición
+
+    private bool writeState = false;
+
 
     // Start is called before the first frame update
     void Start()
@@ -75,7 +76,13 @@ public class PaceManager : MonoBehaviour
 
         isAnalogAcquisition = PlayerPrefs.GetInt("AnalogAcquisition", 1) == 1; // if true
 
-        rightHand = PlayerPrefs.GetInt("RightHand_NHPTsp", 0) == 1;
+        isSerialConnection = PlayerPrefs.GetInt("SerialConnection", 1) == 1;
+
+        rightHand = PlayerPrefs.GetInt("RightHand_NHPT", 1) == 1;
+
+        // Eventos
+        hapticGrabberHand.onPegGrab.AddListener(PegGrabEvent);
+        hapticGrabberHand.onPegRelease.AddListener(PegReleaseEvent);
 
         // Guarda posiciones y rotaciones iniciales de los pegs
         PegPosition = new Vector3[Pegs.Length];
@@ -88,30 +95,19 @@ public class PaceManager : MonoBehaviour
 
         for (int i = 0; i < HoleBases.Length; i++)
         {
-            HoleBases[i].SetActive(false); // Desactiva los pegs fantasma de los agujeros
+            HoleBases[i].GetComponent<MeshRenderer>().enabled = false; // Desactiva los pegs fantasma de los agujeros
 
             PHCollisionEvents[i].onTriggerEnter.AddListener(PegEnter); // Establece una conexión con los eventos de entrada de los pegs
-            PHCollisionEvents[i].onTriggerExit.AddListener(PegExit); // Establece una conexión con los eventos de salida de los pegs
         }
 
+        if (isCamRec || isAnalogAcquisition)
+            StartCoroutine(AcquisitionStart());
 
-        if (isCamRec)
+        if (isSerialConnection)
         {
-            videoRecorder.StartVideoCapture();
-            cameraRecording = true;
+            serialController.SetActive(true);
         }
 
-        if (isAnalogAcquisition)
-        {
-            // Inicializa variables NI
-            digitalOutputParams = new NiDaqMx.DigitalOutputParams[8];
-            for (int i = 0; i < 8; i++)
-            {
-                digitalOutputParams[i] = new NiDaqMx.DigitalOutputParams();
-                _ = NiDaqMx.CreateDigitalOutput(digitalOutputParams[i], false, i);
-            }
-            writeState = RunNITrigger(0, lines);
-        }
 
         MirrorScene();
     }
@@ -120,42 +116,32 @@ public class PaceManager : MonoBehaviour
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            RunTrigger(8, endPulse: true);
+
+            daqConnector.EndConnection();
+
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 2); // Salir del test al menú inicial
+        }
 
         if (Input.GetKeyDown("s"))
             MirrorScene();
 
         currentTime += Time.deltaTime; // Aumenta el tiempo en intervalos deltaTime, que es el tiempo entre frames
 
-        if (writeState)
-            writeState = RunNITrigger(0, lines);
-
-
         if (numberPegsEntered < totalPegsEntered) // Verifica que el número de turnos no sea mayor al total
         {
-            if (!holeActivated) // Current time raramente toma un valor entero, entonces se define una diferencia máxima
+            if (pegEntered)
             {
-                HoleBases[holeNumber - 1].SetActive(true); // Activa el peg fantasma de un agujero
-                holeActivated = true;
-            }
-            if (pegEntered) // Current time raramente toma un valor entero, entonces se define una diferencia máxima
-            {
-                HoleBases[holeNumber - 1].SetActive(false); // Desactiva el peg fantasma
+                HoleBases[holeNumber].SetActive(false);
 
                 fileManager.StoreTrialOutcome(1);
 
                 numberPegsEntered++; // Suma uno a la cantidad de turnos
                 pegEntered = false; // Setea en falso para poder iniciar el turno siguiente
-                holeActivated = false;
 
-                holesEntered[holeNumber - 1] = true; // Agujero holeNumber-1 usado
-
-                if (numberPegsEntered < totalPegsEntered) // Verifica que el número de turnos no se mayor al número de pegs
-                {
-                    holeNumber++;
-                }
+                holesEntered[holeNumber] = true; // Agujero holeNumber usado
             }
-
         }
         else
         {
@@ -167,11 +153,31 @@ public class PaceManager : MonoBehaviour
             if (!writtenData)
             {
                 fileManager.WriteData();
+
+                if (isAnalogAcquisition)
+                {
+                    // Se marca el fin de la tarea
+                    RunTrigger(8, endPulse: true);
+                }
+
                 writtenData = true;
             }
         }
     }
 
+    IEnumerator AcquisitionStart()
+    {
+        if (isCamRec)
+        {
+            videoRecorder.StartVideoCapture();
+            cameraRecording = true;
+        }
+
+        yield return new WaitForSeconds((float)3);
+
+        if (isAnalogAcquisition)
+            RunTrigger(8); // Se marca el inicio de la tarea
+    }
 
     public void ResetPegs() // Método que regresa los pegs a su posición inicial
     {
@@ -186,16 +192,35 @@ public class PaceManager : MonoBehaviour
         }
     }
 
-    void PegEnter(Collider col) // Método llamado al producirse un evento de entrada de peg
+    void PegGrabEvent(string peg)
     {
-        Debug.Log("Peg in"); // Mensaje por consola
-        pegEntered = true; // Setea pegEntered en true, lo que terminará el turno
-        PHCollisionEvents[holeNumber - 1].onTriggerEnter.RemoveListener(PegEnter); // Se desvincula del evento del agujero usado
+        if (peg.StartsWith("Peg"))
+        {
+            if (isAnalogAcquisition)
+                RunTrigger(1);
+
+            string resultString = Regex.Match(peg, @"\d+").Value;
+            int pegGrabbed = int.Parse(resultString);
+
+            fileManager.StorePeg(pegGrabbed);
+            fileManager.StoreGrabMoment();
+        }
     }
 
-    void PegExit(Collider col) // Método llamado al producirse un evento de salida de peg (no usado)
+    void PegReleaseEvent()
     {
-        Debug.Log("Peg out"); // Mensaje por consola
+        fileManager.StoreGrabMoment(0);
+    }
+
+    void PegEnter(Collider col, string holeName) // Método llamado al producirse un evento de entrada de peg
+    {
+        RunTrigger(2);
+        string resultString = Regex.Match(holeName, @"\d+").Value;
+        holeNumber = int.Parse(resultString);
+        fileManager.StoreHole(holeNumber);
+
+        pegEntered = true; // Setea pegEntered en true, lo que terminará el turno
+        PHCollisionEvents[holeNumber].onTriggerEnter.RemoveListener(PegEnter); // Se desvincula del evento del agujero usado
     }
 
     void DisablePegPlaneCollisions()
@@ -242,8 +267,15 @@ public class PaceManager : MonoBehaviour
         }
     }
 
+    IEnumerator TriggerPulseWidth(int trigger)
+    {
+        yield return new WaitForSecondsRealtime((float)0.01);
 
-    public bool RunNITrigger(int trigger, int lines)
+        if (writeState)
+            writeState = RunTrigger(trigger, endPulse: true);
+    }
+
+    public bool RunTrigger(int trigger, bool endPulse = false)
     {
         bool status = false;
         uint[] message = { 1 };
@@ -254,19 +286,19 @@ public class PaceManager : MonoBehaviour
                 status = false;
                 break;
             case 1:
-                message = new uint[] { 0, 0, 0, 1, 1, 1, 1, 1 };
+                message = new uint[] { 0, 1, 1, 1, 1, 1, 1, 1 };
                 break;
             case 2:
-                message = new uint[] { 1, 0, 1, 1, 1, 1, 1, 1 }; // Trial izquierdo e incorrecto
+                message = new uint[] { 1, 0, 1, 1, 1, 1, 1, 1 };
                 break;
             case 3:
-                message = new uint[] { 1, 1, 0, 1, 1, 1, 1, 1 }; // Trial izquierdo y correcto
+                message = new uint[] { 1, 1, 0, 1, 1, 1, 1, 1 };
                 break;
             case 4:
-                message = new uint[] { 1, 1, 1, 0, 1, 1, 1, 1 }; // Trial derecho e incorrecto
+                message = new uint[] { 1, 1, 1, 0, 1, 1, 1, 1 };
                 break;
             case 5:
-                message = new uint[] { 1, 1, 1, 1, 0, 1, 1, 1 }; // Trial derecho y correcto
+                message = new uint[] { 1, 1, 1, 1, 0, 1, 1, 1 };
                 break;
             case 6:
                 message = new uint[] { 1, 1, 1, 1, 1, 0, 1, 1 };
@@ -282,11 +314,38 @@ public class PaceManager : MonoBehaviour
                 break;
         }
 
-        for (int i = 0; i < lines; i++)
-            status = NiDaqMx.WriteDigitalValue(digitalOutputParams[i], new uint[] { message[i] }, ref numWritten);
+        writeState = daqConnector.WriteDigitalValue(message, endPulse, port: 0);
 
-        fileManager.StoreTrigger(trigger);
+        if (trigger != 0 && trigger != 8)
+        {
+            fileManager.StoreTrigger(trigger);
+            StartCoroutine(TriggerPulseWidth(trigger));
+        }
+
+        if (trigger == 8)
+            fileManager.StoreTrigger(trigger + 10);
 
         return status;
     }
+
+    //public bool RunNITriggerTestPort2(int trigger)
+    //{
+    //    bool status = false;
+    //    uint[] message = { 0 };
+    //    switch (trigger)
+    //    {
+    //        case 0:
+    //            message[0] = 0;
+    //            status = false;
+    //            break;
+    //        case 1:
+    //            message[0] = 1;
+    //            break;
+    //    }
+
+    //    //daqConnector.WriteDigitalValue(message, port: 2);
+
+    //    fileManager.StoreTrigger(trigger+10);
+    //    return status;
+    //}
 }

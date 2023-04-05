@@ -1,32 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!135 &919132149078551473
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2792927762570658866}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 10
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!64 &851667571
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3027281866268647936}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 4
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -2432090755550338912, guid: d5de15a35342f7f4eb96bbbe7bf85d73, type: 3}
 --- !u!1 &3027964555320329480
 GameObject:
   m_ObjectHideFlags: 0
@@ -37,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3030251220965202360}
   - component: {fileID: 3081350833534036984}
-  - component: {fileID: 3027281865963105887}
+  - component: {fileID: 1604939534488875591}
   m_Layer: 9
   m_Name: Grabber
   m_TagString: Untagged
@@ -55,6 +28,7 @@ Transform:
   m_LocalRotation: {x: -0, y: 1, z: -0, w: 0.00021807462}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3027281864423229023}
   - {fileID: 3027281864870028568}
@@ -79,7 +53,7 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 112
   m_CollisionDetection: 2
---- !u!114 &3027281865963105887
+--- !u!114 &1604939534488875591
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -88,14 +62,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 3027964555320329480}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a60de31598d3cfb4687e88fcca6c38dd, type: 3}
+  m_Script: {fileID: 11500000, guid: d38feef13592a7c4baff407b7998983a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   buttonID: 0
   ButtonActsAsToggle: 0
-  physicsToggleStyle: 2
-  DisableUnityCollisionsWithTouchableObjects: 0
-  grabberParent: {fileID: 3027964555320329480}
+  physicsToggleStyle: 0
+  DisableUnityCollisionsWithTouchableObjects: 1
+  grabberParent: {fileID: 0}
+  onPegGrab:
+    m_PersistentCalls:
+      m_Calls: []
+  onPegRelease:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &3027976402247265264
 GameObject:
   m_ObjectHideFlags: 0
@@ -124,6 +104,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.025, y: 0.025, z: 0.025}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3031864044489188060}
   m_RootOrder: 0
@@ -219,7 +200,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3031864044489188060}
   m_Layer: 0
-  m_Name: HapticDeviceWithGrabber 1
+  m_Name: HapticDeviceWithGrabberNHPT
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -235,25 +216,13 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.07, y: 0.55, z: -0.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3030201161415020710}
   - {fileID: 3030251220965202360}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!135 &919132148798659980
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2792927762831585801}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 3
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &2193191886547990462
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -320,6 +289,19 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 4084115489724298124, guid: e80a585a9e081e74eac027d51ba2e208, type: 3}
   m_PrefabInstance: {fileID: 2193191886547990462}
   m_PrefabAsset: {fileID: 0}
+--- !u!135 &919132149078551473
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2792927762570658866}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 10
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!4 &3281340360687197832 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3739784063475493174, guid: e80a585a9e081e74eac027d51ba2e208, type: 3}
@@ -400,6 +382,20 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 672967853333091639, guid: 390fe94e437c1dc46a4bbc93252fdfcb, type: 3}
   m_PrefabInstance: {fileID: 2546165889967961911}
   m_PrefabAsset: {fileID: 0}
+--- !u!64 &851667571
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3027281866268647936}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -2432090755550338912, guid: d5de15a35342f7f4eb96bbbe7bf85d73, type: 3}
 --- !u!1001 &3294659183972955206
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -466,6 +462,19 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 827116499126224463, guid: 21196800d37a127428b32db5f6ce3135, type: 3}
   m_PrefabInstance: {fileID: 3294659183972955206}
   m_PrefabAsset: {fileID: 0}
+--- !u!135 &919132148798659980
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2792927762831585801}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 3
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!4 &3281340360392403123 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 13883251013246197, guid: 21196800d37a127428b32db5f6ce3135, type: 3}

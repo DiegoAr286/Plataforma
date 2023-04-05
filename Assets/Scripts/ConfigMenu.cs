@@ -8,19 +8,19 @@ using System.Linq;
 
 public class ConfigMenu : MonoBehaviour
 {
+    public GameObject inputFieldCOM;
+    public GameObject textCOM;
+
+
     void Start()
     {
         PlayerPrefs.SetInt("CameraRec", 1);
 
         PlayerPrefs.SetInt("AnalogAcquisition", 1);
 
+        PlayerPrefs.SetInt("SerialConnection", 1);
 
-        PlayerPrefs.SetInt("RightHand_NHPTcb", 0);
-        PlayerPrefs.SetInt("LeftHand_NHPTcb", 1);
-
-
-        PlayerPrefs.SetInt("RightHand_NHPTsp", 0);
-        PlayerPrefs.SetInt("LeftHand_NHPTsp", 1);
+        PlayerPrefs.SetInt("RightHand_NHPT", 0);
     }
 
 
@@ -34,27 +34,37 @@ public class ConfigMenu : MonoBehaviour
         PlayerPrefs.SetInt("AnalogAcquisition", isAnalogAcquisition ? 1 : 0);
     }
 
-    public void SetHandRight_NHPTcb(bool isRightHandcb)
+    public void SetSerialConnection(bool isSerialConnection)
     {
-        PlayerPrefs.SetInt("RightHand_NHPTcb", isRightHandcb ? 1 : 0);
-        PlayerPrefs.SetInt("LeftHand_NHPTcb", isRightHandcb ? 0 : 1);
+        PlayerPrefs.SetInt("SerialConnection", isSerialConnection ? 1 : 0);
+
+        if (isSerialConnection)
+        {
+            inputFieldCOM.SetActive(true);
+            textCOM.SetActive(true);
+
+            PlayerPrefs.SetString("COMNumber", "COM8");
+            Debug.Log(PlayerPrefs.GetString("COMNumber"));
+        }
+        else
+        {
+            inputFieldCOM.SetActive(false);
+            textCOM.SetActive(false);
+        }
     }
 
-    public void SetHandLeft_NHPTcb(bool isLeftHandcb)
+    public void SetCOMNumber()
     {
-        PlayerPrefs.SetInt("LeftHand_NHPTcb", isLeftHandcb ? 1 : 0);
-        PlayerPrefs.SetInt("RightHand_NHPTcb", isLeftHandcb ? 0 : 1);
+        PlayerPrefs.SetString("COMNumber", inputFieldCOM.GetComponent<TMP_InputField>().text);
     }
 
-    public void SetHandRight_NHPTsp(bool isRightHandsp)
+    public void SetHandRight_NHPT(bool isRightHand)
     {
-        PlayerPrefs.SetInt("RightHand_NHPTsp", isRightHandsp ? 1 : 0);
-        PlayerPrefs.SetInt("LeftHand_NHPTsp", isRightHandsp ? 0 : 1);
+        PlayerPrefs.SetInt("RightHand_NHPT", isRightHand ? 1 : 0);
     }
 
-    public void SetHandLeft_NHPTsp(bool isLeftHandsp)
+    public void SetHandLeft_NHPT(bool isLeftHand)
     {
-        PlayerPrefs.SetInt("LeftHand_NHPTsp", isLeftHandsp ? 1 : 0);
-        PlayerPrefs.SetInt("RightHand_NHPTsp", isLeftHandsp ? 0 : 1);
+        PlayerPrefs.SetInt("RightHand_NHPT", isLeftHand ? 0 : 1);
     }
 }

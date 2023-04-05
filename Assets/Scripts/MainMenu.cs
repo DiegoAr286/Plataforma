@@ -88,7 +88,7 @@ public class MainMenu : MonoBehaviour
                 paradigmID = 2;
                 for (int i = 0; i < ConfigMenu.Length; i++)
                     ConfigMenu[i].SetActive(false);
-                ConfigMenu[1].SetActive(true);
+                ConfigMenu[0].SetActive(true);
                 break;
 
             case 3: // 3: N-Back Task
@@ -108,14 +108,14 @@ public class MainMenu : MonoBehaviour
                 paradigmID = 5;
                 for (int i = 0; i < ConfigMenu.Length; i++)
                     ConfigMenu[i].SetActive(false);
-                ConfigMenu[2].SetActive(true);
+                ConfigMenu[1].SetActive(true);
                 break;
 
             case 6: // 6: Color Comparison Task
                 paradigmID = 6;
                 for (int i = 0; i < ConfigMenu.Length; i++)
                     ConfigMenu[i].SetActive(false);
-                ConfigMenu[2].SetActive(true);
+                ConfigMenu[1].SetActive(true);
                 break;
         }
     }

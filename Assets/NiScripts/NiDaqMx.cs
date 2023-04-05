@@ -423,23 +423,9 @@ namespace Janelia
         public class DigitalOutputParams
         {
             public string deviceName = "Dev1";
-            //public string DeviceName
-            //{
-            //    get => deviceName;
-            //    set { Restrict(); deviceName = value; }
-            //}
-
-            //internal bool inUse = false;
-            //internal void Restrict()
-            //{
-            //    if (inUse)
-            //    {
-            //        throw new MemberAccessException("Janelia.NiDaqMx.OutpuParams are in use and cannot be changed");
-            //    }
-            //}
-
         }
-        public static bool CreateDigitalOutput(DigitalOutputParams p, bool allLines = true, int line = 0)
+
+        public static bool CreateDigitalOutput(DigitalOutputParams p, bool allLines = true, int line = 0, int port = 0)
         {
             ulong taskHandle = (ulong)line;
             if (!Init(p.deviceName, ref taskHandle))
@@ -453,11 +439,17 @@ namespace Janelia
             //string fullChannelNames = String.Join(", ", p.channelNames.Select(c => p.deviceName + "/" + c));
 
             byte[] physicalChannels;
-            if (allLines)
-                physicalChannels = MakeCString("Dev1/port0/line0:7");
+            if (port == 0)
+            {
+                if (allLines)
+                    physicalChannels = MakeCString("Dev1/port0/line0:7");
+                else
+                    physicalChannels = MakeCString("Dev1/port0/line" + line);
+            }
             else
-                physicalChannels = MakeCString("Dev1/port0/line" + line);
-
+            {
+                physicalChannels = MakeCString("Dev1/port2/line0:0");
+            }
             byte[] namesToAssignToChannels = MakeCString("");
             int status = DAQmxCreateDOChan(taskHandle, physicalChannels, namesToAssignToChannels, DAQmx_Val_ChanForAllLines);
 
@@ -506,6 +498,18 @@ namespace Janelia
 
 
         // ================================================================================================================== //
+
+        public static bool CheckInit()
+        {
+            int line = 0;
+            string deviceName = "Dev1";
+            ulong taskHandle = (ulong)line;
+            if (!Init(deviceName, ref taskHandle))
+            {
+                return false;
+            }
+            return true;
+        }
 
         // ================================================================================================================== //
         // Digital input
