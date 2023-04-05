@@ -21,20 +21,17 @@ public class NBackManager : MonoBehaviour
 
     [Range(2, 3)] public int nBack = 2; // Número N de N-Back
 
-    private bool warmUp = false; // Booleano que marca la etapa de calentamiento
-    private bool warmUpFinished = false; // Booleano que marca que se terminó la etapa de calentamiento
     private bool taskFinished = false; // Booleano que marca que se terminó la etapa de registro
     private bool task = false; // Booleano que marca la etapa de registro
 
-    private int[] warmUpOrder; // Array que contiene el orden de las letras durante el calentamiento
-    private int[] warmUpCoincidences; // Array que contiene dónde se encuentran las coincidencias dentro del calentamiento
+    private bool training = false;
+
     private int[] taskOrder; // Array que contiene el orden de las letras durante el registro
     private int[] taskCoincidences; // Array que contiene dónde se encuentran las coincidencias dentro del registro
     private int coincidenceCounter = 0; // Variable que cuenta la cantidad de coincidencias
 
 
     private int fixedFrameCounter = 0; // Contador de la cantidad de frames de FixedUpdate que pasaron
-    private int frameCounter; // Contador de la cantidad de frames de Update que pasaron
     private int letterCounter = 0; // Contador de letras que se han mostrado
     private bool activeLetter = false; // Booleano que señala si se encuentra una tecla activa
     private int letter = 0; // Variable que contiene qué letra se mostrará
@@ -55,7 +52,6 @@ public class NBackManager : MonoBehaviour
     private bool writeState = false;
     private int numWritten = 0;
     private int lines = 3; // Líneas digitales a escribir
-    private int frameCounterNI = 0;
 
     // Entrada digital
     NiDaqMx.DigitalInputParams digitalInputParams; // Parámetros NI
@@ -83,8 +79,13 @@ public class NBackManager : MonoBehaviour
 
         correctMarker.SetActive(false);
         incorrectMarker.SetActive(false);
+        warmUpInit.SetActive(false);
         taskInit.SetActive(false);
         finishSign.SetActive(false);
+
+        training = PlayerPrefs.GetInt("Training", 0) == 1; // if true
+
+        TaskInit();
 
         LetterOrder(nBack);
 
@@ -107,20 +108,9 @@ public class NBackManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && !warmUp && !task && !warmUpFinished)
+        if (Input.GetKeyDown(KeyCode.Space) && !task && !taskFinished)
         {
             warmUpInit.SetActive(false);
-            warmUp = true;
-        }
-        if (Input.GetKeyDown(KeyCode.S) && !warmUp && !task && !warmUpFinished)
-        {
-            warmUpInit.SetActive(false);
-            warmUpFinished = true;
-            taskInit.SetActive(true);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Space) && !warmUp && !task && warmUpFinished && !taskFinished)
-        {
             taskInit.SetActive(false);
             task = true;
         }
@@ -132,190 +122,152 @@ public class NBackManager : MonoBehaviour
 
             NiDaqMx.ClearInputTask(digitalInputParams);
 
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 3); // Salir del test al menú inicial
+            SceneManager.LoadScene(0); // Salir del test al menú inicial
         }
 
 
-
-        //if (Input.GetKeyDown("return") && (warmUp || task) && !alreadyPressed)
-        if (readDigitalData[0] == 1 && (warmUp || task) && !alreadyPressed)
+        if (readDigitalData[0] == 1 && task && !alreadyPressed)
         {
             if (validTime)
             {
-                correctMarker.SetActive(true);
-                frameCounter = 0;
+                StartCoroutine(ActivateMarker(success: true));
                 reactionTime = Time.realtimeSinceStartup - initTime;
                 validTime = false;
                 matchTrial = true;
             }
             else
             {
-                incorrectMarker.SetActive(true);
-                frameCounter = 0;
+                StartCoroutine(ActivateMarker(success: false));
                 reactionTime = -1;
                 falseAlarm = true;
             }
             alreadyPressed = true;
 
-            if (task)
+            if (!training)
                 writeState = RunNITrigger(1, lines);
         }
-
-        if (frameCounter < 50)
-            frameCounter++;
-        if (frameCounter == 49)
-        {
-            correctMarker.SetActive(false);
-            incorrectMarker.SetActive(false);
-        }
-
-        TriggerPulseWidth();
     }
 
     void FixedUpdate()
     {
-        //if (readDigitalData[0] == 1)
-        //{
-        //    writeState = NiDaqMx.WriteDigitalValue(digitalOutputParams, new uint[] { 1, 0, 1, 1, 1, 1, 1, 1 }, ref numWritten);
-        //}
-        // Sesión de prueba
-        if (warmUp)
-        {
-            if (letterCounter <= warmUpOrder.Length)
-            {
-                _ = NiDaqMx.ReadFromDigitalInput(digitalInputParams, ref readDigitalData, ref numReadPerChannel, ref numBytesPerSamp);
-
-                if (fixedFrameCounter == 50)
-                {
-                    if (activeLetter)
-                    {
-                        Letters[letter].SetActive(false);
-                        activeLetter = false;
-                    }
-
-                }
-
-                if (fixedFrameCounter == 250)
-                {
-                    fixedFrameCounter = 0;
-                    //letter = Random.Range(0, 15);
-                    if (letterCounter < warmUpOrder.Length)
-                    {
-                        letter = warmUpOrder[letterCounter];
-                        Letters[letter].SetActive(true);
-                        activeLetter = true;
-
-                        if (letterCounter == warmUpCoincidences[coincidenceCounter] + nBack)
-                        {
-                            if (coincidenceCounter < warmUpCoincidences.Length - 1)
-                                coincidenceCounter++;
-                            validTime = true;
-                        }
-                        else
-                            validTime = false;
-                    }
-                    letterCounter++;
-                    alreadyPressed = false;
-                }
-                else if (fixedFrameCounter < 250)
-                    fixedFrameCounter++;
-            }
-            else
-            {
-                Letters[letter].SetActive(false);
-                fixedFrameCounter = 0;
-                coincidenceCounter = 0;
-                letterCounter = 0;
-                activeLetter = false;
-                validTime = false;
-                alreadyPressed = false;
-                warmUp = false;
-                warmUpFinished = true;
-                taskInit.SetActive(true);
-            }
-        }
-
-        // Sesión de registro
         if (task)
         {
             if (letterCounter <= taskOrder.Length)
             {
                 _ = NiDaqMx.ReadFromDigitalInput(digitalInputParams, ref readDigitalData, ref numReadPerChannel, ref numBytesPerSamp);
 
-                if (fixedFrameCounter == 50)
-                {
-                    if (activeLetter)
-                    {
-                        Letters[letter].SetActive(false);
-                        activeLetter = false;
-                    }
+                if (fixedFrameCounter == 50) // 500 ms
+                    DeactivateLetter();
 
-                }
-
-                if (fixedFrameCounter == 250)
+                if (fixedFrameCounter == 300) // 2.5 s, se suman a los 500 ms
                 {
                     fixedFrameCounter = 0;
-                    if (letterCounter < taskOrder.Length)
-                    {
-                        letter = taskOrder[letterCounter];
-                        Letters[letter].SetActive(true);
-                        activeLetter = true;
-                        initTime = Time.realtimeSinceStartupAsDouble;
-                        writeState = RunNITrigger(2, lines);
-
-                        if (validTime && !matchTrial)
-                            missTrial = true;
-
-                        if (letterCounter > 2) // Guarda datos a partir de la 3ra letra
-                        {
-                            FileManager.StoreDataInBuffer(letterCounter, matchingTrial ? 1 : 0, matchTrial ? 1 : 0, matchTrial ? 1 : 0, missTrial ? 1 : 0,
-                                falseAlarm ? 1 : 0, reactionTime, taskOrder[letterCounter - 1], taskOrder[letterCounter - 2], taskOrder[letterCounter - 3]);
-                        }
-
-                        if (letterCounter == taskCoincidences[coincidenceCounter] + nBack)
-                        {
-                            if (coincidenceCounter < taskCoincidences.Length - 1)
-                                coincidenceCounter++;
-                            validTime = true;
-                            matchingTrial = true;
-                        }
-                        else
-                        {
-
-                            validTime = false;
-                            matchingTrial = false;
-                        }
-                        reactionTime = 0;
-
-                    }
-                    if (letterCounter == taskOrder.Length)
-                    {
-                        FileManager.StoreDataInBuffer(letterCounter, matchingTrial ? 1 : 0, matchTrial ? 1 : 0, matchTrial ? 1 : 0, missTrial ? 1 : 0,
-                            falseAlarm ? 1 : 0, reactionTime, taskOrder[letterCounter - 1], taskOrder[letterCounter - 2], taskOrder[letterCounter - 3]);
-                    }
-                    letterCounter++;
-                    alreadyPressed = false;
-                    matchTrial = false;
-                    missTrial = false;
-                    falseAlarm = false;
+                    ActivateLetter();
                 }
-                else if (fixedFrameCounter < 250)
+                else if (fixedFrameCounter < 300)
                     fixedFrameCounter++;
             }
             else
             {
-                Letters[letter].SetActive(false);
-                activeLetter = false;
-                validTime = false;
-                alreadyPressed = false;
-                finishSign.SetActive(true);
-                FileManager.WriteData();
-                taskFinished = true;
-                task = false;
-
-                StartCoroutine(TaskExit());
+                TaskEnd();
             }
         }
+    }
+
+    private void TaskInit()
+    {
+        if (training)
+            warmUpInit.SetActive(true);
+        else
+            taskInit.SetActive(true);
+    }
+
+    private void DeactivateLetter()
+    {
+        if (activeLetter)
+        {
+            Letters[letter].SetActive(false);
+            activeLetter = false;
+        }
+    }
+
+    private void ActivateLetter()
+    {
+        if (validTime && !matchTrial)
+        {
+            missTrial = true;
+            //StartCoroutine(ActivateMarker(success:false));
+        }
+
+        if (letterCounter < taskOrder.Length)
+        {
+            letter = taskOrder[letterCounter];
+            Letters[letter].SetActive(true);
+            activeLetter = true;
+
+            if (!training)
+            {
+                initTime = Time.realtimeSinceStartupAsDouble;
+                writeState = RunNITrigger(2, lines);
+
+
+                if (letterCounter > 2) // Guarda datos a partir de la 3ra letra
+                    SaveLetter();
+            }
+
+            CheckLetterCoincidence();
+
+            reactionTime = 0;
+        }
+
+        if (letterCounter == taskOrder.Length && !training)
+            SaveLetter();
+
+        letterCounter++;
+        alreadyPressed = false;
+        matchTrial = false;
+        missTrial = false;
+        falseAlarm = false;
+    }
+
+    private void CheckLetterCoincidence()
+    {
+        if (letterCounter == taskCoincidences[coincidenceCounter] + nBack)
+        {
+            if (coincidenceCounter < taskCoincidences.Length - 1)
+                coincidenceCounter++;
+            validTime = true;
+            matchingTrial = true;
+        }
+        else
+        {
+            validTime = false;
+            matchingTrial = false;
+        }
+    }
+
+    private void SaveLetter()
+    {
+        FileManager.StoreDataInBuffer(letterCounter, matchingTrial ? 1 : 0, matchTrial ? 1 : 0,
+            matchTrial ? 1 : 0, missTrial ? 1 : 0, falseAlarm ? 1 : 0, reactionTime,
+            taskOrder[letterCounter - 1], taskOrder[letterCounter - 2], taskOrder[letterCounter - 3]);
+    }
+
+    private void TaskEnd()
+    {
+        Letters[letter].SetActive(false);
+        activeLetter = false;
+        validTime = false;
+        alreadyPressed = false;
+        finishSign.SetActive(true);
+
+        if (!training)
+            FileManager.WriteData();
+
+        taskFinished = true;
+        task = false;
+
+        StartCoroutine(TaskExit());
     }
 
     IEnumerator TaskExit()
@@ -330,95 +282,76 @@ public class NBackManager : MonoBehaviour
         SceneManager.LoadScene(0); // Salir del test al menú inicial
     }
 
+    IEnumerator ActivateMarker(bool success)
+    {
+        if (success)
+            correctMarker.SetActive(true);
+        else
+            incorrectMarker.SetActive(true);
+
+        yield return new WaitForSeconds((float)0.25);
+
+        correctMarker.SetActive(false);
+        incorrectMarker.SetActive(false);
+    }
+
     private void LetterOrder(int nBack)
     {
-        warmUpOrder = new int[25]; // 9 coincidencias, 33% de 25
-        warmUpCoincidences = new int[9];
-        taskOrder = new int[50]; // 17 coincidencias, 33% de 50
-        taskCoincidences = new int[17];
-
-        // Se genera el orden aleatorio de las letras para las dos etapas
-        for (int i = 0; i < warmUpOrder.Length; i++)
+        if (training)
         {
-            warmUpOrder[i] = Random.Range(0, 15);
-            //Debug.Log(warmUpOrder[i]);
+            taskOrder = new int[25]; // 9 coincidencias, 33% de 25
+            taskCoincidences = new int[9];
         }
-        for (int i = 0; i < warmUpCoincidences.Length; i++)
-            warmUpCoincidences[i] = 25;
+        else
+        {
+            taskOrder = new int[62]; // 21 coincidencias, 33% de 62
+            taskCoincidences = new int[21];
+        }
 
+        // Se genera el orden aleatorio de las letras
         for (int i = 0; i < taskOrder.Length; i++)
             taskOrder[i] = Random.Range(0, 15);
         for (int i = 0; i < taskCoincidences.Length; i++)
-            taskCoincidences[i] = 50;
+            taskCoincidences[i] = taskOrder.Length; // Se les da a todas un valor fuera de rango para inicializar
 
         // Se agregan coincidencias para cumplir con lo requerido
+        GenerateCoincidences();
+
+        // Se verifica la cantidad de coincidencias y se eliminan las sobrantes
+        DeleteExtraCoincidences();
+    }
+
+    private void GenerateCoincidences()
+    {
         int randomPosition;
-        for (int i = 0; i < 9; i++)
+        for (int i = 0; i < taskCoincidences.Length; i++)
         {
-            randomPosition = Random.Range(0, 25 - nBack);
+            randomPosition = Random.Range(0, taskOrder.Length - nBack);
 
             while (repetition == true)
             {
                 repetition = false;
-                for (int j = 0; j < 9; j++)
-                {
-                    if (randomPosition == warmUpCoincidences[j] || randomPosition + nBack == warmUpCoincidences[j] || randomPosition - nBack == warmUpCoincidences[j])
-                    {
-                        randomPosition = Random.Range(0, 25 - nBack);
-                        repetition = true;
-                    }
-                }
-            }
-            repetition = true;
-
-            warmUpOrder[randomPosition + nBack] = warmUpOrder[randomPosition];
-            warmUpCoincidences[i] = randomPosition;
-
-        }
-        System.Array.Sort(warmUpCoincidences);
-
-        for (int i = 0; i < 17; i++)
-        {
-            randomPosition = Random.Range(0, 50 - nBack);
-
-            while (repetition == true)
-            {
-                repetition = false;
-                for (int j = 0; j < 17; j++)
+                for (int j = 0; j < taskCoincidences.Length; j++)
                 {
                     if (randomPosition == taskCoincidences[j] || randomPosition + nBack == taskCoincidences[j] || randomPosition - nBack == taskCoincidences[j])
                     {
-                        randomPosition = Random.Range(0, 50 - nBack);
+                        randomPosition = Random.Range(0, taskOrder.Length - nBack);
                         repetition = true;
                     }
                 }
             }
             repetition = true;
+
             taskOrder[randomPosition + nBack] = taskOrder[randomPosition];
             taskCoincidences[i] = randomPosition;
+
         }
         System.Array.Sort(taskCoincidences);
+    }
 
-        // Se verifica la cantidad de coincidencias y se eliminan las sobrantes
+    void DeleteExtraCoincidences()
+    {
         bool wrongCoincidence;
-        for (int i = 0; i < warmUpOrder.Length - nBack; i++)
-        {
-            if (warmUpOrder[i] == warmUpOrder[i + nBack])
-            {
-                wrongCoincidence = true;
-                for (int j = 0; j < warmUpCoincidences.Length; j++)
-                {
-                    if (i == warmUpCoincidences[j])
-                        wrongCoincidence = false;
-                }
-                if (wrongCoincidence)
-                {
-                    while (warmUpOrder[i] == warmUpOrder[i + nBack])
-                        warmUpOrder[i + nBack] = Random.Range(0, 15);
-                }
-            }
-        }
-
         for (int i = 0; i < taskOrder.Length - nBack; i++)
         {
             if (taskOrder[i] == taskOrder[i + nBack])
@@ -432,24 +365,20 @@ public class NBackManager : MonoBehaviour
                 if (wrongCoincidence)
                 {
                     while (taskOrder[i] == taskOrder[i + nBack])
-                        taskOrder[i + nBack] = Random.Range(0, 15);
+                        taskOrder[i] = Random.Range(0, 15);
+
+                    if (i >= nBack)
+                        if (taskOrder[i - nBack] == taskOrder[i + nBack])
+                            taskOrder[i - nBack] = taskOrder[i];
                 }
             }
         }
     }
 
-    private void TriggerPulseWidth()
+    IEnumerator TriggerPulseWidth()
     {
-        if (writeState)
-        {
-            frameCounterNI++;
-
-            if (writeState && frameCounterNI == 7)
-            {
-                writeState = RunNITrigger(0, lines);
-                frameCounterNI = 0;
-            }
-        }
+        yield return new WaitForSecondsRealtime((float)0.01);
+        writeState = RunNITrigger(0, lines);
     }
 
     public bool RunNITrigger(int trigger, int lines)
@@ -477,22 +406,14 @@ public class NBackManager : MonoBehaviour
             case 5:
                 message = new uint[] { 0, 1, 0, 1, 0, 1, 1, 1 }; // Trial derecho y correcto
                 break;
-            case 6:
-                message = new uint[] { 1, 1, 1, 1, 1, 0, 1, 1 };
-                break;
-            case 7:
-                message = new uint[] { 1, 1, 1, 1, 1, 1, 0, 1 };
-                break;
-            case 8:
-                message = new uint[] { 1, 1, 1, 1, 1, 1, 1, 0 };
-                break;
-            case 9:
-                message = new uint[] { 0, 0, 0, 0, 0, 0, 0, 0 };
-                break;
         }
 
         for (int i = 0; i < lines; i++)
             status = NiDaqMx.WriteDigitalValue(digitalOutputParams[i], new uint[] { message[i] }, ref numWritten);
+
+        if (trigger != 0)
+            StartCoroutine(TriggerPulseWidth());
+
         return status;
     }
 }

@@ -20,8 +20,6 @@ public class MainMenu : MonoBehaviour
 
         if (!Display.displays[1].active)
             Display.displays[1].Activate();
-
-        //GetComponentInParent<Canvas>().targetDisplay = 1;
     }
     public void Start()
     {
@@ -36,8 +34,6 @@ public class MainMenu : MonoBehaviour
         //Apago todos los objetos para que no se muestre el menú de Config al iniciar
         for (int i = 0; i < ConfigMenu.Length; i++)
             ConfigMenu[i].SetActive(false);
-        //ConfigMenuP2_Obj.SetActive(false);
-        //ConfigMenuP3_Obj.SetActive(false);
     }
 
 
@@ -99,6 +95,7 @@ public class MainMenu : MonoBehaviour
                 paradigmID = 3;
                 for (int i = 0; i < ConfigMenu.Length; i++)
                     ConfigMenu[i].SetActive(false);
+                ConfigMenu[3].SetActive(true);
                 break;
 
             case 4: // 4: Stop Signal Task
@@ -126,7 +123,8 @@ public class MainMenu : MonoBehaviour
     IEnumerator ShowSaveDialogCoroutine()
     {
         bool training = PlayerPrefs.GetInt("Training", 0) == 1;
-        if (((paradigmID == 5 || paradigmID == 6) && !training) || paradigmID != 5 && paradigmID != 6)
+
+        if (!training)
         {
             FileBrowser.SetFilters(true, new FileBrowser.Filter("Text Files", ".txt"));
 
