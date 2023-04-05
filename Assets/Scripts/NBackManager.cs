@@ -117,11 +117,14 @@ public class NBackManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            for (int i = 0; i < 8; i++)
-                NiDaqMx.ClearOutputTask(digitalOutputParams[i]);
+            if (writeState)
+            {
+                for (int i = 0; i < 8; i++)
+                    NiDaqMx.ClearOutputTask(digitalOutputParams[i]);
 
-            NiDaqMx.ClearInputTask(digitalInputParams);
-
+                NiDaqMx.ClearInputTask(digitalInputParams);
+            }
+            
             SceneManager.LoadScene(0); // Salir del test al menú inicial
         }
 

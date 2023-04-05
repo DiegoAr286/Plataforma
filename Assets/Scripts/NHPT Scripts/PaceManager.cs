@@ -121,7 +121,7 @@ public class PaceManager : MonoBehaviour
 
             daqConnector.EndConnection();
 
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 2); // Salir del test al menú inicial
+            SceneManager.LoadScene(0); // Salir del test al menú inicial
         }
 
         if (Input.GetKeyDown("s"))

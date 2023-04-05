@@ -129,10 +129,13 @@ public class ColorSelectionManager : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            for (int i = 0; i < 8; i++)
-                NiDaqMx.ClearOutputTask(digitalOutputParams[i]);
+            if (writeState)
+            {
+                for (int i = 0; i < 8; i++)
+                    NiDaqMx.ClearOutputTask(digitalOutputParams[i]);
+            }
 
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 5); // Salir del test al menú inicial
+            SceneManager.LoadScene(0); // Salir del test al menú inicial
         }
 
         //if (Input.GetMouseButtonDown(0))

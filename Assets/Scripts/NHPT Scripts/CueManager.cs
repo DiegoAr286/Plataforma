@@ -160,7 +160,7 @@ public class CueManager : MonoBehaviour
 
             daqConnector.EndConnection();
 
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1); // Salir del test al menú inicial
+            SceneManager.LoadScene(0); // Salir del test al menú inicial
         }
 
         if (Input.GetKeyDown(KeyCode.S))
