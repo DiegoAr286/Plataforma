@@ -68,9 +68,6 @@ public class PaceManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        // Desactiva colisión entre los pegs y el plano invisible
-        DisablePegPlaneCollisions();
-
         // Opciones
         isCamRec = PlayerPrefs.GetInt("CameraRec", 1) == 1; // if true
 
@@ -223,16 +220,6 @@ public class PaceManager : MonoBehaviour
         PHCollisionEvents[holeNumber].onTriggerEnter.RemoveListener(PegEnter); // Se desvincula del evento del agujero usado
     }
 
-    void DisablePegPlaneCollisions()
-    {
-        GameObject plane = GameObject.Find("CylinderCube");
-        Collider planeCollider = plane.GetComponent<Collider>();
-        for (int ii = 0; ii < Pegs.Length; ii++)
-        {
-            Physics.IgnoreCollision(Pegs[ii].transform.GetChild(0).gameObject.GetComponent<Collider>(), planeCollider);
-        }
-    }
-
     private void MirrorScene()
     {
         if (rightHand)
@@ -327,25 +314,4 @@ public class PaceManager : MonoBehaviour
 
         return status;
     }
-
-    //public bool RunNITriggerTestPort2(int trigger)
-    //{
-    //    bool status = false;
-    //    uint[] message = { 0 };
-    //    switch (trigger)
-    //    {
-    //        case 0:
-    //            message[0] = 0;
-    //            status = false;
-    //            break;
-    //        case 1:
-    //            message[0] = 1;
-    //            break;
-    //    }
-
-    //    //daqConnector.WriteDigitalValue(message, port: 2);
-
-    //    fileManager.StoreTrigger(trigger+10);
-    //    return status;
-    //}
 }

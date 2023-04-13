@@ -93,14 +93,13 @@ public class CueManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        // Desactiva colisión entre los pegs y el plano invisible
-        DisablePegPlaneCollisions();
-
         // Establece una conexión con el evento de toque de la esfera de inicio
         startSphereCollisionEvent.onTriggerEnter.AddListener(StartSphereEvent);
 
         startSphere = GameObject.Find("StartSphere"); // Busca el objeto esfera de inicio
         startSphere.SetActive(false);
+
+        startSphereWaitTime = Random.Range(5, 9);
 
         // Opciones
         isCamRec = PlayerPrefs.GetInt("CameraRec", 1) == 1; // if true
@@ -297,6 +296,8 @@ public class CueManager : MonoBehaviour
 
         pegNumber = pegOrder[pegIndex];
         holeNumber = holeOrder[pegIndex];
+
+        startSphereWaitTime = Random.Range(5, 9);
     }
 
     void PegGrabEvent(string peg)
@@ -321,17 +322,6 @@ public class CueManager : MonoBehaviour
     {
         fileManager.StoreHole(holeNumber - 1);
         pegEntered = true; // Setea pegEntered en true, lo que terminará el turno
-        PHCollisionEvents[holeNumber - 1].onTriggerEnter.RemoveListener(PegEnter); // Se desvincula del evento del agujero usado
-    }
-
-    void DisablePegPlaneCollisions()
-    {
-        GameObject plane = GameObject.Find("CylinderCube");
-        Collider planeCollider = plane.GetComponent<Collider>();
-        for (int ii = 0; ii < Pegs.Length; ii++)
-        {
-            Physics.IgnoreCollision(Pegs[ii].transform.GetChild(0).gameObject.GetComponent<Collider>(), planeCollider);
-        }
     }
 
     private void MirrorScene()

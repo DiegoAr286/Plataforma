@@ -133,14 +133,18 @@ public class DaqConnection : MonoBehaviour
 
     public bool WriteDigitalValue(uint[] message, bool endPulse, int port = 0)
     {
-        if (niDaq)
+        if (isAnalogAcquisition)
         {
-            return (NiWriteDigitalValue(message, endPulse, port));
+            if (niDaq)
+            {
+                return (NiWriteDigitalValue(message, endPulse, port));
+            }
+            else
+            {
+                return (DtWriteDigitalValue(message, endPulse, port));
+            }
         }
-        else
-        {
-            return (DtWriteDigitalValue(message, endPulse, port));
-        }
+        return false;
     }
 
     private bool NiWriteDigitalValue(uint[] message, bool endPulse, int port)
