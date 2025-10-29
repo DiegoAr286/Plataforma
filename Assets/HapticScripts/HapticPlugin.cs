@@ -17,7 +17,7 @@ public class HapticPlugin : MonoBehaviour  {
 
 	[Header("Configuration Attributes")]
 
-	public string configName = "Default PHANToM";  //!< Filename of the Haptic Device Configuration. (Typically "Default Device")
+	public string configName = "Default Device";  //!< Filename of the Haptic Device Configuration. (Typically "Default Device")
 	public bool connect_On_Start = true;		//!< Should the script connect to haptic the moment it's created?
 
 	[Range(0.0f, 1.0f)] public float PhysicsForceStrength = 0.333f; //!< Spring force coupling the haptic forces and the Unity Physics simualtion
