@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine;
 using System.Text.RegularExpressions;
+using DaqUtils;
 
 
 public class CueManager : MonoBehaviour
@@ -223,7 +224,11 @@ public class CueManager : MonoBehaviour
         }
 
         if (isAnalogAcquisition)
+        {
+            daqConnector = new DaqConnection();
+            daqConnector.StartConnection();
             RunTrigger(8); // Se marca el inicio de la tarea
+        }
     }
 
     public void ResetPegs() // Método que regresa los pegs a su posición inicial

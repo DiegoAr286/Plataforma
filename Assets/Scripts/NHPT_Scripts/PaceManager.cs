@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine;
 using System.Text.RegularExpressions;
+using DaqUtils;
 
 
 public class PaceManager : MonoBehaviour
@@ -17,8 +18,8 @@ public class PaceManager : MonoBehaviour
     [Header("Grabación de cámara")]
     public VideoRecord videoRecorder;
 
-    [Header("Conexión DAQ")]
-    public DaqConnection daqConnector;
+    //[Header("Conexión DAQ")]
+    private DaqConnection daqConnector;
 
     [Header("Conexión Serie")]
     public GameObject serialController;
@@ -117,7 +118,7 @@ public class PaceManager : MonoBehaviour
             RunTrigger(8, endPulse: true);
 
             daqConnector.EndConnection();
-
+            
             SceneManager.LoadScene(0); // Salir del test al menú inicial
         }
 
@@ -151,11 +152,8 @@ public class PaceManager : MonoBehaviour
             {
                 fileManager.WriteData();
 
-                if (isAnalogAcquisition)
-                {
-                    // Se marca el fin de la tarea
-                    RunTrigger(8, endPulse: true);
-                }
+                // Se marca el fin de la tarea
+                RunTrigger(8, endPulse: true);
 
                 writtenData = true;
             }
@@ -172,8 +170,9 @@ public class PaceManager : MonoBehaviour
 
         yield return new WaitForSeconds((float)3);
 
-        if (isAnalogAcquisition)
-            RunTrigger(8); // Se marca el inicio de la tarea
+        daqConnector = new DaqConnection();
+        daqConnector.StartConnection();
+        RunTrigger(8); // Se marca el inicio de la tarea
     }
 
     public void ResetPegs() // Método que regresa los pegs a su posición inicial
@@ -193,8 +192,7 @@ public class PaceManager : MonoBehaviour
     {
         if (peg.StartsWith("Peg"))
         {
-            if (isAnalogAcquisition)
-                RunTrigger(1);
+            RunTrigger(1);
 
             string resultString = Regex.Match(peg, @"\d+").Value;
             int pegGrabbed = int.Parse(resultString);
@@ -264,6 +262,9 @@ public class PaceManager : MonoBehaviour
 
     public bool RunTrigger(int trigger, bool endPulse = false)
     {
+        if (!isAnalogAcquisition)
+            return false;
+
         bool status = false;
         uint[] message = { 1 };
         switch (trigger)
