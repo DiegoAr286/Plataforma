@@ -25,13 +25,19 @@ public class Spawner : MonoBehaviour
 
     void Start()
     {
-        if (CSVLoader.Instance == null || CSVLoader.Instance.elementSequence.Count == 0)
-        {
-            Debug.LogError("CSVLoader no está listo o la secuencia está vacía. Asegúrate de cargar la secuencia antes de iniciar la escena.");
+        if (CSVLoader.Instance == null)
             return;
-        }
+
+        if (CSVLoader.Instance.session == "Pre")
+            CSVLoader.Instance.LoadSequence("FruitNinja_Pre");
+        else if (CSVLoader.Instance.session == "Post")
+            CSVLoader.Instance.LoadSequence("FruitNinja_Post");
+
+        if (CSVLoader.Instance.elementSequence.Count == 0)
+            return;
 
         spawnSequence = CSVLoader.Instance.elementSequence;
+        Debug.Log(spawnSequence);
     }
 
     private void OnEnable()
@@ -48,6 +54,7 @@ public class Spawner : MonoBehaviour
     {
         yield return new WaitForSeconds(2f);
 
+        int i = 0;
         foreach (ElementData data in spawnSequence)
         {
             GameObject prefab;
@@ -67,7 +74,8 @@ public class Spawner : MonoBehaviour
             OnFruitSpawned?.Invoke(fruit);
 
             fruit.GetComponent<Rigidbody>().AddForce(fruit.transform.up * data.Force, ForceMode.Impulse);
-
+            i++;
+            Debug.Log(i);
             yield return new WaitForSeconds(data.WaitTime);
         }
     }

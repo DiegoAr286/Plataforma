@@ -126,6 +126,19 @@ public class GenericDataLogger : MonoBehaviour
         csvBuilder.AppendLine(string.Join(",", row));
     }
 
+    public void SetFilePath()
+    {
+        if (!isInitialized) return;
+
+        string timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
+        string fileName = $"{ParadigmName}_{SubjectID}_{Session}_{timestamp}.csv";
+
+        // Application.persistentDataPath es una ubicación segura en cualquier sistema operativo
+        string filePath = Path.Combine(Application.persistentDataPath, fileName);
+        PlayerPrefs.SetString("Name", filePath);
+    }
+
+
     /// <summary>
     /// Guarda todos los datos acumulados en un archivo CSV.
     /// </summary>

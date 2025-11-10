@@ -106,7 +106,6 @@ public class PaceManager : MonoBehaviour
             serialController.SetActive(true);
         }
 
-
         MirrorScene();
     }
 
@@ -115,10 +114,13 @@ public class PaceManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            RunTrigger(8, endPulse: true);
+            if (isAnalogAcquisition)
+            {
+                RunTrigger(8, endPulse: true);
 
-            daqConnector.EndConnection();
-            
+                daqConnector.EndConnection();
+            }
+
             SceneManager.LoadScene(0); // Salir del test al menú inicial
         }
 
@@ -152,8 +154,11 @@ public class PaceManager : MonoBehaviour
             {
                 fileManager.WriteData();
 
-                // Se marca el fin de la tarea
-                RunTrigger(8, endPulse: true);
+                if (isAnalogAcquisition)
+                {
+                    // Se marca el fin de la tarea
+                    RunTrigger(8, endPulse: true);
+                }
 
                 writtenData = true;
             }
@@ -170,9 +175,12 @@ public class PaceManager : MonoBehaviour
 
         yield return new WaitForSeconds((float)3);
 
-        daqConnector = new DaqConnection();
-        daqConnector.StartConnection();
-        RunTrigger(8); // Se marca el inicio de la tarea
+        if (isAnalogAcquisition)
+        {
+            daqConnector = new DaqConnection();
+            daqConnector.StartConnection();
+            RunTrigger(8); // Se marca el inicio de la tarea
+        }
     }
 
     public void ResetPegs() // Método que regresa los pegs a su posición inicial
@@ -192,7 +200,8 @@ public class PaceManager : MonoBehaviour
     {
         if (peg.StartsWith("Peg"))
         {
-            RunTrigger(1);
+            if (isAnalogAcquisition)
+                RunTrigger(1);
 
             string resultString = Regex.Match(peg, @"\d+").Value;
             int pegGrabbed = int.Parse(resultString);
@@ -209,7 +218,8 @@ public class PaceManager : MonoBehaviour
 
     void PegEnter(Collider col, string holeName) // Método llamado al producirse un evento de entrada de peg
     {
-        RunTrigger(2);
+        if (isAnalogAcquisition)
+            RunTrigger(2);
         string resultString = Regex.Match(holeName, @"\d+").Value;
         holeNumber = int.Parse(resultString);
         fileManager.StoreHole(holeNumber);

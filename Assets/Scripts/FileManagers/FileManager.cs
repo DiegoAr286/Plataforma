@@ -41,6 +41,7 @@ public class FileManager : MonoBehaviour
     void Start()
     {
         path = PlayerPrefs.GetString("Name");
+        Debug.Log(path);
 
         rightHand = PlayerPrefs.GetInt("RightHand_NHPT");
 

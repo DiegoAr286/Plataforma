@@ -9,6 +9,8 @@ public class CSVLoader : MonoBehaviour
 
     public List<ElementData> elementSequence { get; private set; } = new List<ElementData>();
 
+    public string session { get; set; } = string.Empty;
+
     private void Awake()
     {
         if (Instance == null)
