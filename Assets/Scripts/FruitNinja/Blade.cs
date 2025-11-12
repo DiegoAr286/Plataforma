@@ -5,7 +5,7 @@ public class Blade : MonoBehaviour
     private Camera mainCamera;
     private Collider bladeCollider;
     private TrailRenderer bladeTrail;
-    private bool slicing;
+    //private bool slicing;
 
     private Vector3 oldPosition;
 
@@ -62,7 +62,7 @@ public class Blade : MonoBehaviour
 
         oldPosition = transform.position;
 
-        slicing = true;
+        //slicing = true;
         bladeCollider.enabled = true;
         bladeTrail.enabled = true;
         bladeTrail.Clear();
@@ -70,7 +70,7 @@ public class Blade : MonoBehaviour
 
     private void StopSlicing()
     {
-        slicing = false;
+        //slicing = false;
         bladeCollider.enabled = false;
         bladeTrail.enabled = false;
     }

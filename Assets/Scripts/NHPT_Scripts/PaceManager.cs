@@ -114,14 +114,7 @@ public class PaceManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (isAnalogAcquisition)
-            {
-                RunTrigger(8, endPulse: true);
-
-                daqConnector.EndConnection();
-            }
-
-            SceneManager.LoadScene(0); // Salir del test al menú inicial
+            ExitParadigm();
         }
 
         if (Input.GetKeyDown("s"))
@@ -161,8 +154,22 @@ public class PaceManager : MonoBehaviour
                 }
 
                 writtenData = true;
+
+                ExitParadigm();
             }
         }
+    }
+
+    private void ExitParadigm()
+    {
+        if (isAnalogAcquisition)
+        {
+            RunTrigger(8, endPulse: true);
+
+            daqConnector.EndConnection();
+        }
+
+        SceneManager.LoadScene(0);
     }
 
     IEnumerator AcquisitionStart()

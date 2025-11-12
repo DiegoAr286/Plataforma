@@ -1,11 +1,12 @@
-﻿using UnityEngine;
+﻿using DaqUtils;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq; // Necesario para la aleatorización (OrderBy)
+using System.Linq;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class TrajectoryTrackingManager : MonoBehaviour
 {
-    // --- Definición de los estados del ensayo ---
     private enum TrialState
     {
         Setup,
@@ -18,96 +19,90 @@ public class TrajectoryTrackingManager : MonoBehaviour
         Finished
     }
 
-    [Header("Referencias de la Escena")]
-    [Tooltip("El objeto que representa el cursor del usuario.")]
-    [SerializeField] private Transform cursor;
-
     private GameObject homeTarget;
     private List<GameObject> peripheralTargets;
 
     [Header("Parámetros del Paradigma")]
-    [Tooltip("Tiempo en segundos que el usuario debe mantener el cursor en el objetivo inicial para empezar.")]
-    [SerializeField] private float startDwellTime = 2.0f;
+    //[Tooltip("Tiempo en segundos que el usuario debe mantener el cursor en el objetivo inicial para empezar.")]
+    //[SerializeField] private float startDwellTime = 2.0f;
     [Tooltip("Tiempo en segundos que el usuario debe mantener el cursor en el objetivo periférico.")]
     [SerializeField] private float targetDwellTime = 0.5f;
     [Tooltip("Tiempo de pausa en segundos entre el final de un ensayo y el inicio del siguiente.")]
     [SerializeField] private float interTrialInterval = 1.0f;
 
-    [Header("Materiales Visuales")]
-    [SerializeField] private Material idleMaterial;   // Color neutro
-    [SerializeField] private Material cueMaterial;    // Color que indica "ve aquí"
-    [SerializeField] private Material correctMaterial; // Color que indica "estás en el lugar correcto"
+    [Tooltip("Número total de 'vueltas' completas (cada vuelta incluye todos los targets periféricos una vez).")]
+    [SerializeField] private int totalCircuits = 1;
 
-    // --- Variables de estado internas ---
+    [Header("Materiales Visuales")]
+    [SerializeField] private Material idleMaterial;
+    [SerializeField] private Material cueMaterial;
+    [SerializeField] private Material correctMaterial;
+
+    [Header("Configuración del Plano")]
+    [SerializeField] private GameObject basePlane;
+    [Tooltip("Plano del experimento")]
+    [SerializeField] private bool verticalPlane = true;
+
     private TrialState currentState;
     private List<int> trialSequence;
     private int currentTrialIndex = -1;
-    private float dwellTimer = 0f;
+    //private float dwellTimer = 0f;
 
-    // --- Referencias a los componentes (cache) ---
+    private int completedCircuits = 0;
+
     private Renderer homeTargetRenderer;
+
+    [Header("Manejo de archivos")]
+    public FileManagerRT fileManager;
 
     void Start()
     {
         StartCoroutine(InitializeParadigm());
-
     }
 
-    /// <summary>
-    /// Inicializa el paradigma después de un breve retardo para dar tiempo
-    /// a otros scripts (como el generador de círculos) a ejecutarse.
-    /// </summary>
+    private void SetPlane()
+    {
+        verticalPlane = PlayerPrefs.GetInt("VerticalPlane", 1) == 1;
+
+        if (!verticalPlane)
+        {
+            Camera.main.transform.position = new Vector3(0f, 4f, 0f);
+            Camera.main.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            basePlane.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
+        }
+    }
+
     private IEnumerator InitializeParadigm()
     {
-        // Espera un frame para asegurar que todo en Start() se ha ejecutado
         yield return null;
 
-        // --- ✨ LÓGICA DE BÚSQUEDA DINÁMICA DE TARGETS ✨ ---
+        SetPlane();
+
         homeTarget = GameObject.FindGameObjectWithTag("HomeTarget");
         peripheralTargets = new List<GameObject>(GameObject.FindGameObjectsWithTag("PeripheralTarget"));
 
         if (homeTarget == null || peripheralTargets.Count == 0)
         {
             Debug.LogError("No se encontraron los targets en la escena. Asegúrate de que están generados y tienen los Tags 'HomeTarget' y 'PeripheralTarget'.");
-            this.enabled = false; // Desactiva el script si no hay targets
+            this.enabled = false;
             yield break;
         }
 
         Debug.Log($"Encontrados {peripheralTargets.Count} targets periféricos y 1 target central.");
-        // --------------------------------------------------------
-
-        // Cacheamos los componentes para mayor eficiencia
         homeTargetRenderer = homeTarget.GetComponent<Renderer>();
 
-        // El resto de la lógica de Setup ahora puede ejecutarse de forma segura
         SetState(TrialState.Setup);
     }
 
     void Update()
     {
-        // --- Máquina de Estados ---
         switch (currentState)
         {
             case TrialState.WaitingForStart:
-                // Espera a que el investigador inicie la prueba
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
                     Debug.Log("barra presionada");
-                    //// Lógica para detectar si el cursor está en el Home Target
-                    //// (Esto se manejará con Triggers, pero como fallback, usamos distancia)
-                    //float distanceToHome = Vector3.Distance(cursor.position, homeTarget.transform.position);
-                    //if (distanceToHome < homeTarget.transform.localScale.x / 2) // Asume que el target es una esfera/círculo
-                    //{
-                    //    dwellTimer += Time.deltaTime;
-                    //    if (dwellTimer >= startDwellTime)
-                    //    {
                     StartNextTrial();
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    dwellTimer = 0f; // Resetea el contador si el cursor se sale
-                    //}
                 }
                 break;
         }
@@ -118,14 +113,11 @@ public class TrajectoryTrackingManager : MonoBehaviour
         currentState = newState;
         Debug.Log($"Nuevo Estado: {newState}");
 
-        // --- Lógica de entrada a cada estado ---
         switch (newState)
         {
             case TrialState.Setup:
-                // Prepara la secuencia aleatoria de ensayos
                 trialSequence = Enumerable.Range(0, peripheralTargets.Count).OrderBy(x => Random.value).ToList();
                 currentTrialIndex = -1;
-                // Configura visuales iniciales
                 SetAllTargetsMaterial(idleMaterial);
                 homeTargetRenderer.material = cueMaterial;
                 Debug.Log("Setup completado. Presiona ESPACIO con el cursor en el centro para empezar.");
@@ -134,32 +126,53 @@ public class TrajectoryTrackingManager : MonoBehaviour
         }
     }
 
+    private void GenerateNewTrialSequence()
+    {
+        trialSequence = Enumerable.Range(0, peripheralTargets.Count).OrderBy(x => Random.value).ToList();
+    }
+
     private void StartNextTrial()
     {
-        dwellTimer = 0f;
+        //dwellTimer = 0f;
         currentTrialIndex++;
 
         if (currentTrialIndex >= trialSequence.Count)
         {
-            SetState(TrialState.Finished);
-            Debug.Log("¡Bloque de ensayos finalizado!");
-            // Aquí llamarías al DataLogger para guardar el archivo.
-            return;
+            completedCircuits++;
+
+            Debug.Log($"Vuelta {completedCircuits} de {totalCircuits} completada.");
+
+            if (completedCircuits >= totalCircuits)
+            {
+                SetState(TrialState.Finished);
+                Debug.Log("¡Sesión finalizada!");
+                ExitParadigm();
+                return;
+            }
+
+            GenerateNewTrialSequence();
+            currentTrialIndex = 0;
         }
 
-        // Iluminar el siguiente objetivo
         int targetIndex = trialSequence[currentTrialIndex];
         peripheralTargets[targetIndex].GetComponent<Renderer>().material = cueMaterial;
         homeTargetRenderer.material = idleMaterial;
 
-        // Aquí registrarías el evento y enviarías el trigger
-        // DataLogger.Instance.LogEvent("Target_Appeared", PrecisionClock.Instance.Time, $"TargetID:{targetIndex}");
-        // TriggerController.Instance.SendTrigger();
+        fileManager.StoreTrial();
 
         SetState(TrialState.ReachingOutbound);
     }
 
-    // --- Métodos para ser llamados por los Triggers de los Objetivos ---
+    private void ExitParadigm()
+    {
+        //RunTrigger(8, endPulse: true);
+
+        fileManager.WriteData();
+
+        //daqConnector.EndConnection();
+        SceneManager.LoadScene(0);
+    }
+
     public void OnCursorEnterTarget(GameObject targetObject)
     {
         if (currentState == TrialState.ReachingOutbound)
@@ -167,10 +180,9 @@ public class TrajectoryTrackingManager : MonoBehaviour
             int targetIndex = peripheralTargets.IndexOf(targetObject);
             if (targetIndex == trialSequence[currentTrialIndex])
             {
-                // El usuario ha alcanzado el objetivo correcto
                 targetObject.GetComponent<Renderer>().material = correctMaterial;
-                Debug.Log("objetivo alcanzado");
-                // DataLogger.Instance.LogEvent("Target_Reached", ...);
+                Debug.Log("Objetivo alcanzado");
+                fileManager.StoreSphere(targetIndex);
                 SetState(TrialState.DwellingAtTarget);
                 StartCoroutine(DwellAtTargetCoroutine());
             }
@@ -179,20 +191,16 @@ public class TrajectoryTrackingManager : MonoBehaviour
         {
             if (targetObject == homeTarget)
             {
-                // El usuario ha vuelto al centro
                 homeTargetRenderer.material = correctMaterial;
-                // DataLogger.Instance.LogEvent("Home_Reached", ...);
                 SetState(TrialState.InterTrialInterval);
                 StartCoroutine(InterTrialCoroutine());
             }
         }
     }
 
-    // --- Coroutines para las pausas ---
     private IEnumerator DwellAtTargetCoroutine()
     {
         yield return new WaitForSeconds(targetDwellTime);
-        // El dwell ha terminado, ahora indicamos que vuelva al centro
         peripheralTargets[trialSequence[currentTrialIndex]].GetComponent<Renderer>().material = idleMaterial;
         homeTargetRenderer.material = cueMaterial;
         SetState(TrialState.ReachingInbound);

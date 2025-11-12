@@ -6,7 +6,7 @@ using System.IO;
 using UnityEngine;
 using System.Drawing;
 
-public class FileManagerFN : MonoBehaviour
+public class FileManagerRT : MonoBehaviour
 {
     public HapticPlugin omni;
 
@@ -19,11 +19,7 @@ public class FileManagerFN : MonoBehaviour
 
     private Dictionary<int, int> trialVector;
 
-    private Dictionary<int, int> scoreVector;
-
-    private Dictionary<int, int> cutVector;
-
-    private Dictionary<int, int> fruitVector;
+    private Dictionary<int, int> sphereVector;
 
     private int rightHand;
 
@@ -49,11 +45,8 @@ public class FileManagerFN : MonoBehaviour
         timeVector = new List<float>();
 
         triggerVector = new Dictionary<int, int>();
+        sphereVector = new Dictionary<int, int>();
         trialVector = new Dictionary<int, int>();
-        scoreVector = new Dictionary<int, int>();
-        cutVector = new Dictionary<int, int>();
-
-        fruitVector = new Dictionary<int, int>();
     }
 
     // Update is called once per frame
@@ -78,6 +71,13 @@ public class FileManagerFN : MonoBehaviour
         triggerVector.Add(stylusPosition.Count - 1, trigger);
     }
 
+    public void StoreSphere(int sphere)
+    {
+        if (sphereVector.ContainsKey(stylusPosition.Count - 1))
+            return;
+        sphereVector.Add(stylusPosition.Count - 1, sphere);
+    }
+
     public void StoreTrial()
     {
         if (trialVector.ContainsKey(stylusPosition.Count - 1))
@@ -86,38 +86,14 @@ public class FileManagerFN : MonoBehaviour
         trialN++;
     }
 
-    public void StoreFruit(int fruit)
-    {
-        if (fruitVector.ContainsKey(stylusPosition.Count - 1))
-            return;
-        fruitVector.Add(stylusPosition.Count - 1, fruit);
-    }
-    public void StoreScore(int score)
-    {
-        if (fruitVector.ContainsKey(stylusPosition.Count - 1))
-            return;
-
-        scoreVector.Add(stylusPosition.Count - 1, score);
-    }
-
-    public void StoreCut()
-    {
-        if (cutVector.ContainsKey(stylusPosition.Count - 1))
-            return;
-        cutVector.Add(stylusPosition.Count - 1, 1);
-    }
-
-
     public void WriteData()
     {
-        File.WriteAllText(path, "Position_x,Position_y,Position_z,Velocity_x,Velocity_y,Velocity_z,Time,Trigger,Trial,Score,Fruit,RightHand\n");
+        File.WriteAllText(path, "Position_x,Position_y,Position_z,Velocity_x,Velocity_y,Velocity_z,Time,Trigger,Trial,Sphere,RightHand\n");
         
         trialN = 0;
         int trigger;
         int trial;
-        int score;
-        int cut;
-        int fruit;
+        int sphere;
 
         CultureInfo cult = CultureInfo.InvariantCulture;
         for (int i = 0; i < stylusPosition.Count; i++)
@@ -132,26 +108,15 @@ public class FileManagerFN : MonoBehaviour
             else
                 trial = -1;
 
-            if (scoreVector.ContainsKey(i))
-                score = scoreVector[i];
+            if (sphereVector.ContainsKey(i))
+                sphere = sphereVector[i];
             else
-                score = -1;
+                sphere = -1;
 
-            if (fruitVector.ContainsKey(i))
-                fruit = fruitVector[i];
-            else
-                fruit = -1;
-
-            if (cutVector.ContainsKey(i))
-                cut = cutVector[i];
-            else
-                cut = -1;
-
-
-            File.AppendAllText(path, String.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}\n",
+            File.AppendAllText(path, String.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}\n",
                 stylusPosition[i].x.ToString(cult), stylusPosition[i].y.ToString(cult), stylusPosition[i].z.ToString(cult),
                 stylusVelocity[i].x.ToString(cult), stylusVelocity[i].y.ToString(cult), stylusVelocity[i].z.ToString(cult),
-                timeVector[i].ToString(cult), trigger.ToString(), trial.ToString(), score.ToString(), fruit.ToString(), rightHand.ToString()));
+                timeVector[i].ToString(cult), trigger.ToString(), trial.ToString(), sphere.ToString(), rightHand.ToString()));
         }
     }
 }

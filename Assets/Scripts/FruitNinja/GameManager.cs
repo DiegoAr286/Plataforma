@@ -1,6 +1,7 @@
 using DaqUtils;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
@@ -26,17 +27,26 @@ public class GameManager : MonoBehaviour
     {
         blade = FindObjectOfType<Blade>();
         spawner = FindObjectOfType<Spawner>();
-        
+
         daqConnector = new DaqConnection();
         daqConnector.StartConnection();
     }
 
     private void Start()
     {
-        NewGame();
+        //NewGame();
     }
+
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Space))
+            NewGame();
+
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+            ExitParadigm();
+
+
         HapticPlugin.setForce(omni.configName, new double[] { 0, -forceMagnitude, 0 }, new double[] { 0, 0, 0 });
     }
     private void NewGame()
@@ -82,9 +92,6 @@ public class GameManager : MonoBehaviour
 
     public void Explode()
     {
-        //blade.enabled = false;
-        //spawner.enabled = false;
-
         StartCoroutine(ExplodeSequence());
     }
 
@@ -119,6 +126,16 @@ public class GameManager : MonoBehaviour
 
             yield return null;
         }
+    }
+
+    private void ExitParadigm()
+    {
+        RunTrigger(8, endPulse: true);
+
+        fileManager.WriteData();
+
+        daqConnector.EndConnection();
+        SceneManager.LoadScene(0);
     }
 
     IEnumerator TriggerPulseWidth(int trigger)
@@ -188,6 +205,7 @@ public class GameManager : MonoBehaviour
         if (spawnerInstance != null)
         {
             Spawner.OnFruitSpawned += OnFruitSpawn;
+            Spawner.OnSessionCompleted += ExitParadigm;
         }
     }
 
@@ -197,6 +215,7 @@ public class GameManager : MonoBehaviour
         if (spawnerInstance != null)
         {
             Spawner.OnFruitSpawned -= OnFruitSpawn;
+            Spawner.OnSessionCompleted += ExitParadigm;
         }
     }
 
@@ -205,7 +224,7 @@ public class GameManager : MonoBehaviour
         RunTrigger(1);
 
         fileManager.StoreTrial();
-        fileManager.StoreFruit(fruit.name);
-        //fileManager.StoreFruit(fruit.GetComponent<Fruit>().points);
+        //fileManager.StoreFruit(fruit.name);
+        fileManager.StoreFruit(fruit.GetComponent<Fruit>().points);
     }
 }

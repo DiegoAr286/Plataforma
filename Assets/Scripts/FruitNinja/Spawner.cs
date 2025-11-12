@@ -1,7 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 public class Spawner : MonoBehaviour
 {
@@ -16,7 +16,8 @@ public class Spawner : MonoBehaviour
 
     private List<ElementData> spawnSequence;
 
-    public static event System.Action<GameObject> OnFruitSpawned;
+    public static event Action<GameObject> OnFruitSpawned;
+    public static event Action OnSessionCompleted;
 
     private void Awake()
     {
@@ -37,7 +38,6 @@ public class Spawner : MonoBehaviour
             return;
 
         spawnSequence = CSVLoader.Instance.elementSequence;
-        Debug.Log(spawnSequence);
     }
 
     private void OnEnable()
@@ -54,7 +54,6 @@ public class Spawner : MonoBehaviour
     {
         yield return new WaitForSeconds(2f);
 
-        int i = 0;
         foreach (ElementData data in spawnSequence)
         {
             GameObject prefab;
@@ -74,9 +73,10 @@ public class Spawner : MonoBehaviour
             OnFruitSpawned?.Invoke(fruit);
 
             fruit.GetComponent<Rigidbody>().AddForce(fruit.transform.up * data.Force, ForceMode.Impulse);
-            i++;
-            Debug.Log(i);
+
             yield return new WaitForSeconds(data.WaitTime);
         }
+
+        OnSessionCompleted?.Invoke();
     }
 }

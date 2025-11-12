@@ -170,7 +170,7 @@ public class GenericDataLogger : MonoBehaviour
     // Asegurarse de guardar los datos si la aplicación se cierra inesperadamente
     private void OnApplicationQuit()
     {
-        SaveDataToFile();
+        //SaveDataToFile();
     }
 }
 

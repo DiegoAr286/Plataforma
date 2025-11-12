@@ -16,6 +16,9 @@ public class CirclePointGenerator : MonoBehaviour
     [Tooltip("El ángulo inicial en grados desde donde se empieza a generar.")]
     [SerializeField] private float startAngle = 0f;
 
+    [Tooltip("Plano donde se generarán")]
+    [SerializeField] private bool verticalPlane = true;
+
     [Header("Visualización")]
     [Tooltip("Arrastra aquí un Prefab (ej. una esfera pequeña) para visualizar los puntos.")]
     [SerializeField] private GameObject pointPrefab;
@@ -40,21 +43,30 @@ public class CirclePointGenerator : MonoBehaviour
     {
         generatedPoints.Clear();
 
-        // Calculamos cuánto ángulo hay entre cada punto
+        verticalPlane = PlayerPrefs.GetInt("VerticalPlane", 1) == 1;
+
         float angleStep = 360f / numberOfPoints;
 
         for (int i = 0; i < numberOfPoints; i++)
         {
-            // Calculamos el ángulo para el punto actual
             float currentAngle = startAngle + (i * angleStep);
 
-            // Convertimos el ángulo a radianes para las funciones trigonométricas
             float angleInRad = currentAngle * Mathf.Deg2Rad;
+            
+            float x, y, z;
 
-            // Calculamos las coordenadas X y Z (para un círculo en el plano horizontal)
-            float x = radius * Mathf.Cos(angleInRad);
-            float y = radius * Mathf.Sin(angleInRad);
-            float z = transform.position.z;
+            if (verticalPlane)
+            {
+                x = radius * Mathf.Cos(angleInRad);
+                y = radius * Mathf.Sin(angleInRad);
+                z = transform.position.z;
+            }
+            else
+            {
+                x = radius * Mathf.Cos(angleInRad);
+                y = transform.position.y;
+                z = radius * Mathf.Sin(angleInRad);
+            }
 
             Vector3 pointPosition = new Vector3(x, y, z) + transform.position;
             generatedPoints.Add(pointPosition);
