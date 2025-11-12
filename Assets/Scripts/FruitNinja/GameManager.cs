@@ -34,15 +34,11 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        //NewGame();
+        NewGame();
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-            NewGame();
-
-
         if (Input.GetKeyDown(KeyCode.Escape))
             ExitParadigm();
 
@@ -82,6 +78,8 @@ public class GameManager : MonoBehaviour
     public void IncreaseScore(int amount)
     {
         RunTrigger(2);
+
+        HapticPlugin.setForce(omni.configName, new double[] { 0, -0.8f, 0 }, new double[] { 0, 0, 0 });
 
         score += amount;
         scoreText.text = score.ToString();
@@ -224,7 +222,8 @@ public class GameManager : MonoBehaviour
         RunTrigger(1);
 
         fileManager.StoreTrial();
-        //fileManager.StoreFruit(fruit.name);
-        fileManager.StoreFruit(fruit.GetComponent<Fruit>().points);
+        string objectName = fruit.name.Replace("(Clone)", "");
+        fileManager.StoreFruit(objectName.Trim());
+        //fileManager.StoreFruit(fruit.GetComponent<Fruit>().points);
     }
 }

@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.4482453, g: 0.49827206, b: 0.5755818, a: 1}
+  m_IndirectSpecularColor: {r: 0.4482447, g: 0.49827182, b: 0.5755813, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -159,7 +159,7 @@ MonoBehaviour:
   cueMaterial: {fileID: 2100000, guid: fac88d20ed13be4479d31600f62a6e41, type: 2}
   correctMaterial: {fileID: 2100000, guid: d3cbfa71f7f33844d8abb4a5cdb14eb5, type: 2}
   basePlane: {fileID: 1963785133}
-  verticalPlane: 0
+  verticalPlane: 1
   fileManager: {fileID: 927663855}
 --- !u!4 &119493597
 Transform:
@@ -661,7 +661,7 @@ MonoBehaviour:
   radius: 1.5
   numberOfPoints: 8
   startAngle: 0
-  verticalPlane: 0
+  verticalPlane: 1
   pointPrefab: {fileID: 7903029354489638710, guid: f850193104f8c1b469d676612968e1d4, type: 3}
 --- !u!4 &2132193773
 Transform:

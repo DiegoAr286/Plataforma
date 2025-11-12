@@ -23,7 +23,7 @@ public class FileManagerFN : MonoBehaviour
 
     private Dictionary<int, int> cutVector;
 
-    private Dictionary<int, int> fruitVector;
+    private Dictionary<int, string> fruitVector;
 
     private int rightHand;
 
@@ -53,7 +53,7 @@ public class FileManagerFN : MonoBehaviour
         scoreVector = new Dictionary<int, int>();
         cutVector = new Dictionary<int, int>();
 
-        fruitVector = new Dictionary<int, int>();
+        fruitVector = new Dictionary<int, string>();
     }
 
     // Update is called once per frame
@@ -86,7 +86,7 @@ public class FileManagerFN : MonoBehaviour
         trialN++;
     }
 
-    public void StoreFruit(int fruit)
+    public void StoreFruit(string fruit)
     {
         if (fruitVector.ContainsKey(stylusPosition.Count - 1))
             return;
@@ -94,7 +94,7 @@ public class FileManagerFN : MonoBehaviour
     }
     public void StoreScore(int score)
     {
-        if (fruitVector.ContainsKey(stylusPosition.Count - 1))
+        if (scoreVector.ContainsKey(stylusPosition.Count - 1))
             return;
 
         scoreVector.Add(stylusPosition.Count - 1, score);
@@ -117,7 +117,7 @@ public class FileManagerFN : MonoBehaviour
         int trial;
         int score;
         int cut;
-        int fruit;
+        string fruit;
 
         CultureInfo cult = CultureInfo.InvariantCulture;
         for (int i = 0; i < stylusPosition.Count; i++)
@@ -140,7 +140,7 @@ public class FileManagerFN : MonoBehaviour
             if (fruitVector.ContainsKey(i))
                 fruit = fruitVector[i];
             else
-                fruit = -1;
+                fruit = "-1";
 
             if (cutVector.ContainsKey(i))
                 cut = cutVector[i];
@@ -151,7 +151,7 @@ public class FileManagerFN : MonoBehaviour
             File.AppendAllText(path, String.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}\n",
                 stylusPosition[i].x.ToString(cult), stylusPosition[i].y.ToString(cult), stylusPosition[i].z.ToString(cult),
                 stylusVelocity[i].x.ToString(cult), stylusVelocity[i].y.ToString(cult), stylusVelocity[i].z.ToString(cult),
-                timeVector[i].ToString(cult), trigger.ToString(), trial.ToString(), score.ToString(), fruit.ToString(), rightHand.ToString()));
+                timeVector[i].ToString(cult), trigger.ToString(), trial.ToString(), score.ToString(), fruit, rightHand.ToString()));
         }
     }
 }

@@ -62,7 +62,7 @@ public class TrajectoryTrackingManager : MonoBehaviour
 
     private void SetPlane()
     {
-        verticalPlane = PlayerPrefs.GetInt("VerticalPlane", 1) == 1;
+        //verticalPlane = PlayerPrefs.GetInt("VerticalPlane", 1) == 1;
 
         if (!verticalPlane)
         {

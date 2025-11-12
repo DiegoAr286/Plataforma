@@ -43,7 +43,7 @@ public class CirclePointGenerator : MonoBehaviour
     {
         generatedPoints.Clear();
 
-        verticalPlane = PlayerPrefs.GetInt("VerticalPlane", 1) == 1;
+        //verticalPlane = PlayerPrefs.GetInt("VerticalPlane", 1) == 1;
 
         float angleStep = 360f / numberOfPoints;
 

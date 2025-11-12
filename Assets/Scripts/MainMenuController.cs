@@ -21,7 +21,7 @@ public class MainMenuController : MonoBehaviour
     //    toggleGroupObject.SetActive(false);
     //}
 
-    void Start()
+    void Awake()
     {
         // --- Configuración Inicial de la UI ---
 

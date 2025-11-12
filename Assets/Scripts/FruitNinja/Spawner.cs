@@ -77,6 +77,8 @@ public class Spawner : MonoBehaviour
             yield return new WaitForSeconds(data.WaitTime);
         }
 
+        yield return new WaitForSeconds(5f);
+
         OnSessionCompleted?.Invoke();
     }
 }
